@@ -1,0 +1,640 @@
+package jp.yamato.malta.android.galleryfragment;
+
+import android.content.ContentResolver;
+import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.support.media.ExifInterface;
+import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
+/**
+ * Created by malta on 2017/05/24.
+ * ImageAdapter
+ */
+
+public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
+    @SuppressWarnings("unused")
+    private static final String TAG = "ImageAdapter";
+
+    public static final String IMAGE_DISPLAY_NAME = "image_display_name";
+    public static final String IMAGE_DATE_TAKEN = "image_date_taken";
+
+    public static final String EXIF_MODEL = "exif_model";
+    public static final String EXIF_DATETIME_ORIGINAL = "exif_datetime_original";
+
+    private static final Map<String, String> sImageColumnsMap;
+
+    static {
+        sImageColumnsMap = new HashMap<>();
+        sImageColumnsMap.put(IMAGE_DISPLAY_NAME, MediaStore.Images.Media.DISPLAY_NAME);
+        sImageColumnsMap.put(IMAGE_DATE_TAKEN, MediaStore.Images.Media.DATE_TAKEN);
+    }
+
+    private Context mContext;
+    private int mResource;
+    private ArrayList<Uri> mAdapterData;
+    private OnItemClickListener mListener;
+
+    private final BitmapCache<Integer> mBitmaps = new BitmapCache<>();
+    private final SparseArray<Integer> mBitmapOrientationMap = new SparseArray<>();
+
+    private boolean mIsInfoSetup;
+    private String[] mExifTags;
+    private String[] mImageTags;
+    private final SparseArray<String[]> mExifInfoMap = new SparseArray<>();
+    private final SparseArray<String[]> mImageInfoMap = new SparseArray<>();
+
+    private LoadTask.BitmapLoader mBitmapLoader = null;
+
+    private final Map<String, Formatter> mFormatter = new HashMap<>();
+
+    //
+    //
+    //
+
+    public ImageAdapter(Context context, int resource, ArrayList<Uri> data,
+            OnItemClickListener listener) {
+        mContext = context;
+        mResource = resource;
+        mAdapterData = data;
+        mListener = listener;
+    }
+
+    public void setAdapterData(ArrayList<Uri> data) {
+        clearCache();
+        LoadTask.cancelAll();
+        mAdapterData = data;
+    }
+
+    public ArrayList<Uri> getAdapterData() {
+        return mAdapterData;
+    }
+
+    public Uri getAdapterDataItem(int position) {
+        return mAdapterData.get(position);
+    }
+
+    public void setBitmapLoader(LoadTask.BitmapLoader loader) {
+        mBitmapLoader = loader;
+    }
+
+    public void setFormatter(String tag, Formatter formatter) {
+        mFormatter.put(tag, formatter);
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+//            Log.d(TAG, "onCreateViewHolder");
+        View view = LayoutInflater.from(mContext).inflate(mResource, parent, false);
+        if (!mIsInfoSetup) {
+            setupInfo(view);
+            mIsInfoSetup = true;
+        }
+        return new ViewHolder(view, mImageTags, mExifTags);
+    }
+
+    private void setupInfo(View view) {
+
+        //
+        // Image
+        //
+
+        ArrayList<String> imageTagList = new ArrayList<>();
+
+        // description
+        View imageDescription = view.findViewWithTag(IMAGE_DISPLAY_NAME);
+        if (imageDescription != null) {
+            imageTagList.add(IMAGE_DISPLAY_NAME);
+        }
+
+        // date taken
+        View imageDateTaken = view.findViewWithTag(IMAGE_DATE_TAKEN);
+        if (imageDateTaken != null) {
+            imageTagList.add(IMAGE_DATE_TAKEN);
+        }
+
+        mImageTags = imageTagList.toArray(new String[imageTagList.size()]);
+
+        //
+        // EXIF
+        //
+
+        ArrayList<String> exifTagList = new ArrayList<>();
+
+        // MODEL
+        View exifModel = view.findViewWithTag(EXIF_MODEL);
+        if (exifModel != null) {
+            exifTagList.add(EXIF_MODEL);
+        }
+        // DATETIME_ORIGINAL
+        View exifDateTimeOriginal = view.findViewWithTag(EXIF_DATETIME_ORIGINAL);
+        if (exifDateTimeOriginal != null) {
+            exifTagList.add(EXIF_DATETIME_ORIGINAL);
+        }
+
+        mExifTags = exifTagList.toArray(new String[exifTagList.size()]);
+    }
+
+    @Override
+    public void onBindViewHolder(final ViewHolder holder, int position) {
+//            Log.d(TAG, "onBindViewHolder");
+
+        // get uri
+        Uri uri = mAdapterData.get(position);
+
+        ImageView imageView = holder.imageView;
+        holder.setTag(position);
+
+        Bitmap bitmap = mBitmaps.get(position);
+
+        if (bitmap == null) {
+            if (LoadTask.sTasks.size() >= LoadTask.MAX_TASK_COUNT) {
+                LoadTask.cancelAll();
+                imageView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyDataSetChanged();
+                    }
+                });
+            } else {
+
+                imageView.setImageResource(android.R.drawable.alert_light_frame);
+                holder.setImageTextNull();
+                holder.setExifTextNull();
+
+                boolean loadImageInfo = mImageInfoMap.get(position) == null;
+                boolean loadExifInfo = mExifInfoMap.get(position) == null;
+
+                LoadTask task = new LoadTask(mContext.getContentResolver(), uri, position, holder,
+                        mBitmapOrientationMap.get(position), mImageTags, mExifTags,
+                        new TaggingTask.OnApplyListener<Integer>() {
+                            @Override
+                            public TaggingTask.Result OnPostResult(Integer key,
+                                    TaggingTask.Result result0) {
+                                LoadTask.Result result = (LoadTask.Result) result0;
+                                if (result.isSuccessful) {
+                                    mBitmaps.put(key, result.bitmap);
+                                    //
+                                    if (result.orientation != null) {
+                                        mBitmapOrientationMap.put(key, result.orientation);
+                                    }
+                                    if (result.imageInfo != null) {
+                                        String[] imageInfo = result.imageInfo;
+                                        for (int i = 0; i < imageInfo.length; i++) {
+                                            Formatter formatter = mFormatter.get(mImageTags[i]);
+                                            if (formatter != null) {
+                                                imageInfo[i] = formatter.format(imageInfo[i]);
+                                            }
+                                        }
+                                        mImageInfoMap.put(key, result.imageInfo);
+                                    }
+                                    if (result.exifInfo != null) {
+                                        String[] exifInfo = result.exifInfo;
+                                        for (int i = 0; i < exifInfo.length; i++) {
+                                            Formatter formatter = mFormatter.get(mExifTags[i]);
+                                            if (formatter != null) {
+                                                exifInfo[i] = formatter.format(exifInfo[i]);
+                                            }
+                                        }
+                                        mExifInfoMap.put(key, result.exifInfo);
+                                    }
+                                }
+                                return null;
+                            }
+
+                            @Override
+                            public void OnApply(Integer key, TaggingTask.TaggedObject taggedObject,
+                                    TaggingTask.Result result0) {
+                                LoadTask.Result result = (LoadTask.Result) result0;
+                                ViewHolder holder = (ViewHolder) taggedObject;
+                                holder.imageView.setImageBitmap(result.bitmap);
+                                //
+                                String[] imageInfo = result.imageInfo;
+                                if (imageInfo == null) {
+                                    imageInfo = mImageInfoMap.get(key);
+                                }
+                                holder.setImageText(imageInfo);
+                                //
+                                String[] exifInfo = result.exifInfo;
+                                if (exifInfo == null) {
+                                    exifInfo = mExifInfoMap.get(key);
+                                }
+                                holder.setExifText(exifInfo);
+                            }
+                        });
+
+                task.setBitmapLoader(mBitmapLoader);
+                task.execute(loadImageInfo, loadExifInfo);
+            }
+        } else {
+            imageView.setImageBitmap(bitmap);
+
+            String[] exifInfo = mExifInfoMap.get(position);
+            holder.setExifText(exifInfo);
+
+            String[] imageInfo = mImageInfoMap.get(position);
+            holder.setImageText(imageInfo);
+
+        }
+
+        // item click mListener
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) {
+                    mListener.onItemClick(v, ImageAdapter.this, holder.getAdapterPosition());
+                }
+            }
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        if (mAdapterData != null) {
+            return mAdapterData.size();
+        }
+
+        return 0;
+    }
+
+    public void clearCache() {
+        mBitmaps.evictAll();
+        mBitmapOrientationMap.clear();
+        mImageInfoMap.clear();
+        mExifInfoMap.clear();
+    }
+
+    public void destroyImageView() {
+        clearCache();
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(View view, ImageAdapter adapter, int position);
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder implements TaggingTask.TaggedObject {
+        // itemView is in super class
+        ImageView imageView;
+        TextView[] textViews;
+
+        int imageFromIndex;
+        int imageToIndex;
+        int exifFromIndex;
+        int exifToIndex;
+
+        Object tag;
+
+        public ViewHolder(View itemView, String[] imageTags, String[] exifTags) {
+            super(itemView);
+            if (itemView instanceof ImageView) {
+                imageView = (ImageView) itemView;
+                return;
+            }
+
+            imageView = (ImageView) itemView.findViewById(R.id.image);
+
+            int length = imageTags.length + exifTags.length;
+
+            imageFromIndex = 0;
+            imageToIndex = imageTags.length;
+            exifFromIndex = imageTags.length;
+            exifToIndex = imageTags.length + exifTags.length;
+
+            textViews = new TextView[length];
+            for (int i = imageFromIndex; i < imageToIndex; i++) {
+                textViews[i] = (TextView) itemView.findViewWithTag(imageTags[i - imageFromIndex]);
+            }
+            for (int i = exifFromIndex; i < exifToIndex; i++) {
+                textViews[i] = (TextView) itemView.findViewWithTag(exifTags[i - exifFromIndex]);
+            }
+        }
+
+        public void setImageText(String[] imageInfo) {
+            if (imageInfo == null) {
+                return;
+            }
+
+            for (int i = imageFromIndex; i < imageToIndex; i++) {
+                textViews[i].setText(imageInfo[i - imageFromIndex]);
+            }
+        }
+
+        public void setImageTextNull() {
+            for (int i = imageFromIndex; i < imageToIndex; i++) {
+                textViews[i].setText("");
+            }
+        }
+
+        public void setExifText(String[] exifInfo) {
+            if (exifInfo == null) {
+                return;
+            }
+
+            for (int i = exifFromIndex; i < exifToIndex; i++) {
+                textViews[i].setText(exifInfo[i - exifFromIndex]);
+            }
+        }
+
+        public void setExifTextNull() {
+            for (int i = exifFromIndex; i < exifToIndex; i++) {
+                textViews[i].setText("");
+            }
+        }
+
+        @Override
+        public void setTag(Object tag) {
+            this.tag = tag;
+        }
+
+        @Override
+        public Object getTag() {
+            return tag;
+        }
+    }
+
+    public static class LoadTask extends TaggingTask<Integer, Boolean> {
+
+        private static final int MAX_TASK_COUNT = 128;
+
+        private static Deque<LoadTask> sTasks = new LinkedList<>();
+
+        public static void cancelAll() {
+            for (LoadTask task : sTasks) {
+                task.cancel(true);
+            }
+            sTasks.clear();
+        }
+
+        private ContentResolver resolver;
+        private Uri uri;
+        private Integer bitmapOrientation;
+        private String[] imageTags;
+        private String[] exifTags;
+
+        private BitmapLoader bitmapLoader = null;
+
+        private LoadTask(ContentResolver resolver, Uri uri, Integer key, TaggedObject holder,
+                Integer bitmapOrientation, String[] imageTags, String[] exifTags,
+                OnApplyListener<Integer> listener) {
+            super(key, holder, listener);
+
+            this.resolver = resolver;
+            this.uri = uri;
+            this.bitmapOrientation = bitmapOrientation;
+            this.imageTags = imageTags;
+            this.exifTags = exifTags;
+
+            if (sTasks.size() >= MAX_TASK_COUNT) {
+                throw new IllegalStateException("don't instantiate a task any more");
+            }
+
+            sTasks.add(this);
+        }
+
+        private void setBitmapLoader(BitmapLoader loader) {
+            this.bitmapLoader = loader;
+        }
+
+        @Override
+        protected Result doInBackground(Boolean... flag) {
+            if (isCancelled()) {
+                return null;
+            }
+
+            final boolean loadImageInfo = flag[0];
+            final boolean loadExifInfo = flag[1];
+
+            // get bitmap
+            Bitmap bitmap;
+            if (bitmapLoader != null) {
+                bitmap = bitmapLoader.loadBitmap(uri);
+            } else {
+                throw new IllegalStateException("need bitmap loader");
+            }
+            if (bitmap == null) {
+                return new Result(false, null, null, null, null);
+            }
+
+            // read provider
+            String[] imageInfo = null;
+            if (loadImageInfo && imageTags.length > 0) {
+//                Log.d(TAG, "load provider");
+                imageInfo = new String[imageTags.length];
+                String[] projection = new String[imageTags.length];
+                for (int i = 0; i < projection.length; i++) {
+                    projection[i] = sImageColumnsMap.get(imageTags[i]);
+                }
+                Cursor cursor = resolver.query(uri, projection, null, null, null);
+                if (cursor != null) {
+                    cursor.moveToFirst();
+                    for (int i = 0; i < imageInfo.length; i++) {
+                        imageInfo[i] = cursor.getString(cursor.getColumnIndex(projection[i]));
+                    }
+                    cursor.close();
+                }
+            }
+
+            // read orientation and other exif
+            Integer orientation = bitmapOrientation;
+            String[] exifInfo = null;
+            if (orientation == null || (loadExifInfo && exifTags.length > 0)) {
+                InputStream stream = null;
+                try {
+                    InputStream in = resolver.openInputStream(uri);
+                    if (in != null) {
+//                        Log.d(TAG, "load exif");
+                        stream = new BufferedInputStream(in);
+                        ExifInterface exifInterface = new ExifInterface(stream);
+
+                        // orientation
+                        if (orientation == null) {
+                            orientation = exifInterface
+                                    .getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                                            ExifInterface.ORIENTATION_NORMAL);
+                        }
+
+                        // other exif
+                        if (loadExifInfo && exifTags.length > 0) {
+                            exifInfo = new String[exifTags.length];
+                            for (int i = 0; i < exifInfo.length; i++) {
+                                switch (exifTags[i]) {
+                                    case EXIF_MODEL:
+                                        exifInfo[i] =
+                                                exifInterface.getAttribute(ExifInterface.TAG_MODEL);
+                                        break;
+                                    case EXIF_DATETIME_ORIGINAL:
+                                        exifInfo[i] = exifInterface
+                                                .getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL);
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (stream != null) {
+                            stream.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            //
+            // rotate
+            //
+            Bitmap newBitmap = bitmap;
+            if (orientation != null) {
+                switch (orientation) {
+                    case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                        newBitmap = createPreScaledBitmap(bitmap, -1.0f, 1.0f, true);
+                        bitmap.recycle();
+                        break;
+                    case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                        newBitmap =
+                                createRotatedAndPreScaledBitmap(bitmap, 180.0f, -1.0f, 1.0f, true);
+                        bitmap.recycle();
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        newBitmap = createRotatedBitmap(bitmap, 90.0f, true);
+                        bitmap.recycle();
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        newBitmap = createRotatedBitmap(bitmap, 180.0f, true);
+                        bitmap.recycle();
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        newBitmap = createRotatedBitmap(bitmap, 270.0f, true);
+                        bitmap.recycle();
+                        break;
+                    case ExifInterface.ORIENTATION_TRANSPOSE:
+                        newBitmap =
+                                createRotatedAndPreScaledBitmap(bitmap, 90.0f, -1.0f, 1.0f, true);
+                        bitmap.recycle();
+                        break;
+                    case ExifInterface.ORIENTATION_TRANSVERSE:
+                        newBitmap =
+                                createRotatedAndPreScaledBitmap(bitmap, 270.0f, -1.0f, 1.0f, true);
+                        bitmap.recycle();
+                        break;
+                }
+            }
+
+            return new Result(true, newBitmap, orientation, imageInfo, exifInfo);
+        }
+
+        @Override
+        protected void onPostExecute(TaggingTask.Result result) {
+            super.onPostExecute(result);
+            resolver = null;
+            sTasks.remove(this);
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            resolver = null;
+            sTasks.remove(this);
+        }
+
+        public interface BitmapLoader {
+            Bitmap loadBitmap(Uri uri);
+        }
+
+        public static class Result extends TaggingTask.Result {
+            public Bitmap bitmap;
+            public Integer orientation;
+            public String[] imageInfo;
+            public String[] exifInfo;
+
+            public Result(boolean isSuccessful, Bitmap bitmap, Integer orientation,
+                    String[] imageInfo, String[] exifInfo) {
+                this.isSuccessful = isSuccessful;
+                this.bitmap = bitmap;
+                this.orientation = orientation;
+                this.imageInfo = imageInfo;
+                this.exifInfo = exifInfo;
+            }
+        }
+
+    }
+
+    public interface Formatter {
+        String format(String str);
+    }
+
+    @SuppressWarnings("unused")
+    private static Bitmap createScaledAndRotatedBitmap(Bitmap src, int dstWidth, int dstHeight,
+            float rotation, boolean filter) {
+        Matrix m = new Matrix();
+        int width = src.getWidth();
+        int height = src.getHeight();
+        float sx = dstWidth / (float) width;
+        float sy = dstHeight / (float) height;
+        m.setScale(sx, sy);
+        float cx = width / 2.0f;
+        float cy = height / 2.0f;
+        m.postRotate(rotation, cx, cy);
+        return Bitmap.createBitmap(src, 0, 0, width, height, m, filter);
+    }
+
+    @SuppressWarnings("unused")
+    private static Bitmap createRotatedBitmap(Bitmap src, float rotation, boolean filter) {
+        Matrix m = new Matrix();
+        int width = src.getWidth();
+        int height = src.getHeight();
+        float cx = width / 2.0f;
+        float cy = height / 2.0f;
+        m.postRotate(rotation, cx, cy);
+        return Bitmap.createBitmap(src, 0, 0, width, height, m, filter);
+    }
+
+    @SuppressWarnings("unused")
+    private static Bitmap createPreScaledBitmap(Bitmap src, float sx, float sy, boolean filter) {
+        Matrix m = new Matrix();
+        int width = src.getWidth();
+        int height = src.getHeight();
+        m.preScale(sx, sy);
+        return Bitmap.createBitmap(src, 0, 0, width, height, m, filter);
+    }
+
+    @SuppressWarnings("unused")
+    private static Bitmap createRotatedAndPreScaledBitmap(Bitmap src, float rotation, float sx,
+            float sy, boolean filter) {
+        Matrix m = new Matrix();
+        int width = src.getWidth();
+        int height = src.getHeight();
+        float cx = width / 2.0f;
+        float cy = height / 2.0f;
+        m.postRotate(rotation, cx, cy);
+        m.preScale(sx, sy);
+        return Bitmap.createBitmap(src, 0, 0, width, height, m, filter);
+    }
+
+    @SuppressWarnings("unused")
+    private static int dp2px(Context con, float dp) {
+        return (int) (dp * con.getResources().getDisplayMetrics().density);
+    }
+
+}
