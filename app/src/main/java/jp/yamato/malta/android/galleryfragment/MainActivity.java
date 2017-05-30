@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity
 
         // fragment
         if (savedInstanceState == null) {
-            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_container, 5);
+            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_container, 2);
 //            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_item);
             getSupportFragmentManager().beginTransaction().replace(R.id.container, mFragment)
                     .commit();
@@ -85,14 +85,6 @@ public class MainActivity extends AppCompatActivity
                 return "";
             }
         });
-        mFragment.setBitmapLoader(new ImageAdapter.LoadTask.BitmapLoader() {
-            @Override
-            public Bitmap loadBitmap(Uri uri) {
-                long id = Long.valueOf(uri.getLastPathSegment());
-                return MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), id,
-                        MediaStore.Images.Thumbnails.MICRO_KIND, null);
-            }
-        });
         mFragment.setFormatter(ImageAdapter.EXIF_MODEL, new ImageAdapter.Formatter() {
             @Override
             public String format(String str) {
@@ -100,6 +92,14 @@ public class MainActivity extends AppCompatActivity
                     return "[" + str + "]";
                 }
                 return "";
+            }
+        });
+        mFragment.setBitmapLoader(new ImageAdapter.LoadTask.BitmapLoader() {
+            @Override
+            public Bitmap loadBitmap(Uri uri) {
+                long id = Long.valueOf(uri.getLastPathSegment());
+                return MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), id,
+                        MediaStore.Images.Thumbnails.MINI_KIND, null);
             }
         });
     }
