@@ -34,18 +34,31 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     @SuppressWarnings("unused")
     private static final String TAG = "ImageAdapter";
 
+    // media provider
+    public static final String IMAGE_DATA = "image_data";
     public static final String IMAGE_DISPLAY_NAME = "image_display_name";
     public static final String IMAGE_DATE_TAKEN = "image_date_taken";
+    public static final String IMAGE_SIZE = "image_size";
 
+    // exif
     public static final String EXIF_MODEL = "exif_model";
     public static final String EXIF_DATETIME_ORIGINAL = "exif_datetime_original";
 
     private static final Map<String, String> sImageColumnsMap;
+    private static final Map<String, String> sExifRealTagsMap;
 
     static {
+        // image
         sImageColumnsMap = new HashMap<>();
+        sImageColumnsMap.put(IMAGE_DATA, MediaStore.Images.Media.DATA);
         sImageColumnsMap.put(IMAGE_DISPLAY_NAME, MediaStore.Images.Media.DISPLAY_NAME);
         sImageColumnsMap.put(IMAGE_DATE_TAKEN, MediaStore.Images.Media.DATE_TAKEN);
+        sImageColumnsMap.put(IMAGE_SIZE, MediaStore.Images.Media.SIZE);
+
+        //exif
+        sExifRealTagsMap = new HashMap<>();
+        sExifRealTagsMap.put(EXIF_MODEL, ExifInterface.TAG_MODEL);
+        sExifRealTagsMap.put(EXIF_DATETIME_ORIGINAL, ExifInterface.TAG_DATETIME_ORIGINAL);
     }
 
     private Context mContext;
@@ -119,9 +132,15 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
         ArrayList<String> imageTagList = new ArrayList<>();
 
-        // description
-        View imageDescription = view.findViewWithTag(IMAGE_DISPLAY_NAME);
-        if (imageDescription != null) {
+        // data
+        View imageData = view.findViewWithTag(IMAGE_DATA);
+        if (imageData != null) {
+            imageTagList.add(IMAGE_DATA);
+        }
+
+        // display name
+        View imageDisplayName = view.findViewWithTag(IMAGE_DISPLAY_NAME);
+        if (imageDisplayName != null) {
             imageTagList.add(IMAGE_DISPLAY_NAME);
         }
 
@@ -129,6 +148,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         View imageDateTaken = view.findViewWithTag(IMAGE_DATE_TAKEN);
         if (imageDateTaken != null) {
             imageTagList.add(IMAGE_DATE_TAKEN);
+        }
+
+        // size
+        View imageSize = view.findViewWithTag(IMAGE_SIZE);
+        if (imageSize != null) {
+            imageTagList.add(IMAGE_SIZE);
         }
 
         mImageTags = imageTagList.toArray(new String[imageTagList.size()]);
@@ -478,16 +503,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                         if (loadExifInfo && exifTags.length > 0) {
                             exifInfo = new String[exifTags.length];
                             for (int i = 0; i < exifInfo.length; i++) {
-                                switch (exifTags[i]) {
-                                    case EXIF_MODEL:
-                                        exifInfo[i] =
-                                                exifInterface.getAttribute(ExifInterface.TAG_MODEL);
-                                        break;
-                                    case EXIF_DATETIME_ORIGINAL:
-                                        exifInfo[i] = exifInterface
-                                                .getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL);
-                                        break;
-                                }
+                                String realTag = sExifRealTagsMap.get(exifTags[i]);
+                                exifInfo[i] = exifInterface.getAttribute(realTag);
                             }
                         }
                     }
