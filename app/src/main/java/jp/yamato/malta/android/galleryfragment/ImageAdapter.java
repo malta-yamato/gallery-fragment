@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,6 +44,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     // exif
     public static final String EXIF_MODEL = "exif_model";
     public static final String EXIF_DATETIME_ORIGINAL = "exif_datetime_original";
+    public static final String EXIF_IMAGE_WIDTH = "exif_image_width";
+    public static final String EXIF_IMAGE_LENGTH = "exif_image_length";
+    public static final String EXIF_GPS_LATITUDE = "exif_gps_latitude";
+    public static final String EXIF_GPS_LONGITUDE = "exif_gps_longitude";
+    public static final String EXIF_GPS_ALTITUDE = "exif_gps_altitude";
 
     private static final Map<String, String> sImageColumnsMap;
     private static final Map<String, String> sExifRealTagsMap;
@@ -59,6 +65,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         sExifRealTagsMap = new HashMap<>();
         sExifRealTagsMap.put(EXIF_MODEL, ExifInterface.TAG_MODEL);
         sExifRealTagsMap.put(EXIF_DATETIME_ORIGINAL, ExifInterface.TAG_DATETIME_ORIGINAL);
+        sExifRealTagsMap.put(EXIF_IMAGE_WIDTH, ExifInterface.TAG_IMAGE_WIDTH);
+        sExifRealTagsMap.put(EXIF_IMAGE_LENGTH, ExifInterface.TAG_IMAGE_LENGTH);
+        sExifRealTagsMap.put(EXIF_GPS_LATITUDE, ExifInterface.TAG_GPS_LATITUDE);
+        sExifRealTagsMap.put(EXIF_GPS_LONGITUDE, ExifInterface.TAG_GPS_LONGITUDE);
+        sExifRealTagsMap.put(EXIF_GPS_ALTITUDE, ExifInterface.TAG_GPS_ALTITUDE);
     }
 
     private Context mContext;
@@ -127,55 +138,34 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private void setupInfo(View view) {
 
         //
-        // Image
+        // Image Tags
         //
-
         ArrayList<String> imageTagList = new ArrayList<>();
-
-        // data
-        View imageData = view.findViewWithTag(IMAGE_DATA);
-        if (imageData != null) {
-            imageTagList.add(IMAGE_DATA);
-        }
-
-        // display name
-        View imageDisplayName = view.findViewWithTag(IMAGE_DISPLAY_NAME);
-        if (imageDisplayName != null) {
-            imageTagList.add(IMAGE_DISPLAY_NAME);
-        }
-
-        // date taken
-        View imageDateTaken = view.findViewWithTag(IMAGE_DATE_TAKEN);
-        if (imageDateTaken != null) {
-            imageTagList.add(IMAGE_DATE_TAKEN);
-        }
-
-        // size
-        View imageSize = view.findViewWithTag(IMAGE_SIZE);
-        if (imageSize != null) {
-            imageTagList.add(IMAGE_SIZE);
-        }
-
+        addTagListWithViewTag(imageTagList, view, IMAGE_DATA);
+        addTagListWithViewTag(imageTagList, view, IMAGE_DISPLAY_NAME);
+        addTagListWithViewTag(imageTagList, view, IMAGE_DATE_TAKEN);
+        addTagListWithViewTag(imageTagList, view, IMAGE_SIZE);
         mImageTags = imageTagList.toArray(new String[imageTagList.size()]);
 
         //
-        // EXIF
+        // EXIF Tags
         //
-
         ArrayList<String> exifTagList = new ArrayList<>();
-
-        // MODEL
-        View exifModel = view.findViewWithTag(EXIF_MODEL);
-        if (exifModel != null) {
-            exifTagList.add(EXIF_MODEL);
-        }
-        // DATETIME_ORIGINAL
-        View exifDateTimeOriginal = view.findViewWithTag(EXIF_DATETIME_ORIGINAL);
-        if (exifDateTimeOriginal != null) {
-            exifTagList.add(EXIF_DATETIME_ORIGINAL);
-        }
-
+        addTagListWithViewTag(exifTagList, view, EXIF_MODEL);
+        addTagListWithViewTag(exifTagList, view, EXIF_DATETIME_ORIGINAL);
+        addTagListWithViewTag(exifTagList, view, EXIF_IMAGE_WIDTH);
+        addTagListWithViewTag(exifTagList, view, EXIF_IMAGE_LENGTH);
+        addTagListWithViewTag(exifTagList, view, EXIF_GPS_LATITUDE);
+        addTagListWithViewTag(exifTagList, view, EXIF_GPS_LONGITUDE);
+        addTagListWithViewTag(exifTagList, view, EXIF_GPS_ALTITUDE);
         mExifTags = exifTagList.toArray(new String[exifTagList.size()]);
+    }
+
+    private void addTagListWithViewTag(List<String> list, View view, String tagName) {
+        View target = view.findViewWithTag(tagName);
+        if (target != null) {
+            list.add(tagName);
+        }
     }
 
     @Override
@@ -504,7 +494,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                             exifInfo = new String[exifTags.length];
                             for (int i = 0; i < exifInfo.length; i++) {
                                 String realTag = sExifRealTagsMap.get(exifTags[i]);
-                                exifInfo[i] = exifInterface.getAttribute(realTag);
+                                if (realTag != null) {
+                                    exifInfo[i] = exifInterface.getAttribute(realTag);
+                                }
                             }
                         }
                     }

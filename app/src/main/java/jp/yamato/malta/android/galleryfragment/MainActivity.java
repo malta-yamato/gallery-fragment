@@ -52,7 +52,13 @@ public class MainActivity extends AppCompatActivity
 
         // fragment
         if (savedInstanceState == null) {
-            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_container, 2);
+//            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_container, 2);
+            mFragment = GalleryFragment
+                    .newInstance(R.layout.simple_selectable_image_container_debug, 2);
+//            mFragment = GalleryFragment
+//                    .newInstance(R.layout.simple_selectable_image_container_debug_2, 2);
+//            mFragment = GalleryFragment
+//                    .newInstance(R.layout.simple_selectable_image_container_debug_3, 2);
 //            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_item);
             getSupportFragmentManager().beginTransaction().replace(R.id.container, mFragment)
                     .commit();
