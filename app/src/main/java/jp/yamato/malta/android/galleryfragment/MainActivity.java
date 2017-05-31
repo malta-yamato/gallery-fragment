@@ -61,18 +61,17 @@ public class MainActivity extends AppCompatActivity
                     (GalleryFragment) getSupportFragmentManager().findFragmentById(R.id.container);
         }
 
-        //
-        // check permission
-        //
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkPermission()) {
-            initLoader();
-            prepareFiles();
-        }
-    }
+        // BitmapLoader setting
+        mFragment.setBitmapLoader(new ImageAdapter.LoadTask.BitmapLoader() {
+            @Override
+            public Bitmap loadBitmap(Uri uri) {
+                long id = Long.valueOf(uri.getLastPathSegment());
+                return MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), id,
+                        MediaStore.Images.Thumbnails.MINI_KIND, null);
+            }
+        });
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+        // Formatter setting
         mFragment.setFormatter(ImageAdapter.IMAGE_DATE_TAKEN, new ImageAdapter.Formatter() {
             @Override
             public String format(String str) {
@@ -94,14 +93,14 @@ public class MainActivity extends AppCompatActivity
                 return "";
             }
         });
-        mFragment.setBitmapLoader(new ImageAdapter.LoadTask.BitmapLoader() {
-            @Override
-            public Bitmap loadBitmap(Uri uri) {
-                long id = Long.valueOf(uri.getLastPathSegment());
-                return MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), id,
-                        MediaStore.Images.Thumbnails.MINI_KIND, null);
-            }
-        });
+
+        //
+        // check permission
+        //
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkPermission()) {
+            initLoader();
+            prepareFiles();
+        }
     }
 
     @Override

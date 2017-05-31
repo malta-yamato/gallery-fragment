@@ -40,6 +40,12 @@ public class GalleryFragment extends Fragment {
 
     private int mResource;
 
+    private DeferredOperations mDeferredOperations;
+
+    public GalleryFragment(){
+        mDeferredOperations = new DeferredOperations();
+    }
+
     public static GalleryFragment newInstance(int resource) {
         GalleryFragment instance = new GalleryFragment();
         Bundle args = new Bundle();
@@ -67,33 +73,39 @@ public class GalleryFragment extends Fragment {
         return instance;
     }
 
-    public void setAdapterData(ArrayList<Uri> data) {
-        if (mAdapter == null) {
-            throw new IllegalStateException("call at least after onStart");
-        }
-        mAdapter.setAdapterData(data);
-        mAdapter.notifyDataSetChanged();
+    public void setAdapterData(final ArrayList<Uri> data) {
+        mDeferredOperations.offer(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.setAdapterData(data);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     public ArrayList<Uri> getAdapterData() {
-        if (mAdapter == null) {
-            throw new IllegalStateException("call at least after onStart");
+        if (!mDeferredOperations.isReleased()) {
+            throw new IllegalStateException("get field is not ready");
         }
         return mAdapter.getAdapterData();
     }
 
-    public void setBitmapLoader(ImageAdapter.LoadTask.BitmapLoader loader) {
-        if (mAdapter == null) {
-            throw new IllegalStateException("call at least after onStart");
-        }
-        mAdapter.setBitmapLoader(loader);
+    public void setBitmapLoader(final ImageAdapter.LoadTask.BitmapLoader loader) {
+        mDeferredOperations.offer(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.setBitmapLoader(loader);
+            }
+        });
     }
 
-    public void setFormatter(String tag, ImageAdapter.Formatter formatter) {
-        if (mAdapter == null) {
-            throw new IllegalStateException("call at least after onStart");
-        }
-        mAdapter.setFormatter(tag, formatter);
+    public void setFormatter(final String tag, final ImageAdapter.Formatter formatter) {
+        mDeferredOperations.offer(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.setFormatter(tag, formatter);
+            }
+        });
     }
 
     @Override
@@ -136,6 +148,8 @@ public class GalleryFragment extends Fragment {
             mAdapter = new ImageAdapter(getContext(), mResource, null, mOnItemClickListener);
         }
         mRecyclerView.setAdapter(mAdapter);
+
+        mDeferredOperations.release();
 
         return mRecyclerView;
     }
