@@ -446,7 +446,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 if (cursor != null) {
                     cursor.moveToFirst();
                     for (int i = 0; i < imageInfo.length; i++) {
-                        imageInfo[i] = cursor.getString(cursor.getColumnIndex(projection[i]));
+                        int index = cursor.getColumnIndex(projection[i]);
+                        if (index >= 0) {
+                            imageInfo[i] = cursor.getString(index);
+                        }
                     }
                     cursor.close();
                 }
