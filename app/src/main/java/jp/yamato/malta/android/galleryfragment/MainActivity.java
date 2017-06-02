@@ -52,14 +52,7 @@ public class MainActivity extends AppCompatActivity
 
         // fragment
         if (savedInstanceState == null) {
-//            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_container, 2);
-            mFragment = GalleryFragment
-                    .newInstance(R.layout.simple_selectable_image_container_debug, 2);
-//            mFragment = GalleryFragment
-//                    .newInstance(R.layout.simple_selectable_image_container_debug_2, 2);
-//            mFragment = GalleryFragment
-//                    .newInstance(R.layout.simple_selectable_image_container_debug_3, 2);
-//            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_item);
+            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_item);
             getSupportFragmentManager().beginTransaction().replace(R.id.container, mFragment)
                     .commit();
         } else {
@@ -163,6 +156,18 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+    }
+
+    private int mLayoutIndex = 0;
+    private int[] mLayoutResources = new int[]{R.layout.simple_selectable_image_container,
+            R.layout.simple_selectable_image_container_debug,
+            R.layout.simple_selectable_image_container_debug_2,
+            R.layout.simple_selectable_image_container_debug_3,
+            R.layout.simple_selectable_image_item};
+
+    public void onButtonClick(View view) {
+        mFragment.setResource(mLayoutResources[mLayoutIndex]);
+        mLayoutIndex = (mLayoutIndex + 1) % mLayoutResources.length;
     }
 
     //

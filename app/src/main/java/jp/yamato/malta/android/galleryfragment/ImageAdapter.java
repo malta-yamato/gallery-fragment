@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.media.ExifInterface;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
@@ -88,7 +89,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     private LoadTask.BitmapLoader mBitmapLoader = null;
 
-    private final Map<String, Formatter> mFormatter = new HashMap<>();
+    private Map<String, Formatter> mFormatter = new HashMap<>();
 
     //
     //
@@ -106,6 +107,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         clearCache();
         LoadTask.cancelAll();
         mAdapterData = data;
+        notifyDataSetChanged();
     }
 
     public ArrayList<Uri> getAdapterData() {
@@ -120,8 +122,20 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         mBitmapLoader = loader;
     }
 
+    public LoadTask.BitmapLoader getBitmapLoader() {
+        return mBitmapLoader;
+    }
+
     public void setFormatter(String tag, Formatter formatter) {
         mFormatter.put(tag, formatter);
+    }
+
+    public void swapFormatter(@NonNull Map<String, Formatter> formatter) {
+        mFormatter = formatter;
+    }
+
+    public Map<String, Formatter> getFormatter() {
+        return mFormatter;
     }
 
     @Override
@@ -297,8 +311,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         mExifInfoMap.clear();
     }
 
-    public void destroyImageView() {
+    public void destroy() {
         clearCache();
+        LoadTask.cancelAll();
     }
 
     public interface OnItemClickListener {

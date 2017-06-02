@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by malta on 2017/05/02.
@@ -38,11 +39,12 @@ public class GalleryFragment extends Fragment {
 
     private int mSpanCount = 2;
 
+    // adapter
     private int mResource;
 
     private DeferredOperations mDeferredOperations;
 
-    public GalleryFragment(){
+    public GalleryFragment() {
         mDeferredOperations = new DeferredOperations();
     }
 
@@ -78,7 +80,6 @@ public class GalleryFragment extends Fragment {
             @Override
             public void run() {
                 mAdapter.setAdapterData(data);
-                mAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -88,6 +89,40 @@ public class GalleryFragment extends Fragment {
             throw new IllegalStateException("get field is not ready");
         }
         return mAdapter.getAdapterData();
+    }
+
+    public Uri getAdapterDataItem(int position) {
+        if (!mDeferredOperations.isReleased()) {
+            throw new IllegalStateException("get field is not ready");
+        }
+        return mAdapter.getAdapterDataItem(position);
+    }
+
+    public void setResource(int resource) {
+        mResource = resource;
+
+        if (mAdapter == null) {
+            return;
+        }
+
+        ArrayList<Uri> data = mAdapter.getAdapterData();
+        ImageAdapter.LoadTask.BitmapLoader bitmapLoader = mAdapter.getBitmapLoader();
+        Map<String, ImageAdapter.Formatter> formatter = mAdapter.getFormatter();
+
+        int position = 0;
+        View child = mRecyclerView.getChildAt(0);
+        if (child != null) {
+            position = mRecyclerView.getChildAdapterPosition(child);
+        }
+
+        mAdapter.destroy();
+
+        mAdapter = new ImageAdapter(getContext(), mResource, data, mOnItemClickListener);
+        mAdapter.setBitmapLoader(bitmapLoader);
+        mAdapter.swapFormatter(formatter);
+
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.scrollToPosition(position);
     }
 
     public void setBitmapLoader(final ImageAdapter.LoadTask.BitmapLoader loader) {
@@ -167,11 +202,8 @@ public class GalleryFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
 
-        // cancel tasks
-        ImageAdapter.LoadTask.cancelAll();
-
         // destroy
-        mAdapter.destroyImageView();
+        mAdapter.destroy();
     }
 
 }
