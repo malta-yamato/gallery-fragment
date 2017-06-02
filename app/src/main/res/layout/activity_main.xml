@@ -6,11 +6,19 @@
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/button1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="onButtonClick"
-        android:text="Button"
+        android:onClick="onChangeResourceButtonClick"
+        android:text="Change resource"
+        tools:ignore="HardcodedText"/>
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onChangeSpanCountButtonClick"
+        android:text="Change span count"
         tools:ignore="HardcodedText"/>
 
     <FrameLayout

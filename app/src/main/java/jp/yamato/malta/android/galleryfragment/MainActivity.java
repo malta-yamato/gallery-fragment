@@ -15,6 +15,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.view.View;
 import android.widget.Toast;
 
@@ -165,9 +166,17 @@ public class MainActivity extends AppCompatActivity
             R.layout.simple_selectable_image_container_debug_3,
             R.layout.simple_selectable_image_item};
 
-    public void onButtonClick(View view) {
+    public void onChangeResourceButtonClick(View view) {
         mFragment.setResource(mLayoutResources[mLayoutIndex]);
         mLayoutIndex = (mLayoutIndex + 1) % mLayoutResources.length;
+    }
+
+    private int mCurrentSpanExtension = 0;
+
+    public void onChangeSpanCountButtonClick(View view) {
+        mCurrentSpanExtension = (mCurrentSpanExtension + 1) % 3;
+        int spanCount = 2 + mCurrentSpanExtension;
+        mFragment.setLayoutManager(new GridLayoutManager(this, spanCount));
     }
 
     //

@@ -125,6 +125,15 @@ public class GalleryFragment extends Fragment {
         mRecyclerView.scrollToPosition(position);
     }
 
+    public void setLayoutManager(final RecyclerView.LayoutManager layoutManager){
+        mDeferredOperations.offer(new Runnable() {
+            @Override
+            public void run() {
+                mRecyclerView.setLayoutManager(layoutManager);
+            }
+        });
+    }
+
     public void setBitmapLoader(final ImageAdapter.LoadTask.BitmapLoader loader) {
         mDeferredOperations.offer(new Runnable() {
             @Override
