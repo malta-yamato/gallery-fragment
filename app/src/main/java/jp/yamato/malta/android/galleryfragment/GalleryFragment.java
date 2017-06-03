@@ -62,6 +62,10 @@ public class GalleryFragment extends Fragment {
         mDelegate.setResource(resource);
     }
 
+    public void setEmptyResource(int resource) {
+        mDelegate.setEmptyResource(resource);
+    }
+
     public void setLayout(int layout, int spanCount) {
         mDelegate.setLayout(layout, spanCount);
     }

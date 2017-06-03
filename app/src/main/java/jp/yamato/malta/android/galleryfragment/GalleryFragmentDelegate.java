@@ -25,11 +25,13 @@ public class GalleryFragmentDelegate {
     private static final String TAG = "GalleryFragmentDelegate";
 
     private static final String ARG_RESOURCE = "arg_resource";
+    private static final String ARG_EMPTY_RESOURCE = "arg_empty_resource";
     private static final String ARG_LAYOUT = "arg_layout";
     private static final String ARG_SPAN_COUNT = "arg_span_count";
     private static final String ARG_DATA = "arg_data";
 
     private static final String SAVE_RESOURCE = "save_resource";
+    private static final String SAVE_EMPTY_RESOURCE = "save_empty_resource";
     private static final String SAVE_LAYOUT = "save_layout";
     private static final String SAVE_SPAN_COUNT = "save_span_count";
     private static final String SAVE_DATA = "save_data";
@@ -45,10 +47,12 @@ public class GalleryFragmentDelegate {
 
     // state
     private int mResource;
+    private int mEmptyResource;
     private int mLayout;
     private int mSpanCount;
 
     private boolean mIsResourceFieldAvailable = false;
+    private boolean mIsEmptyResourceFieldAvailable = false;
     private boolean mIsLayoutFieldAvailable = false;
     private boolean mIsSpanCountFieldAvailable = false;
 
@@ -61,6 +65,7 @@ public class GalleryFragmentDelegate {
     public static void setArguments(Fragment instance, int resource) {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
+        args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, 2);
         instance.setArguments(args);
@@ -69,6 +74,7 @@ public class GalleryFragmentDelegate {
     public static void setArguments(Fragment instance, int resource, int spanCount) {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
+        args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, spanCount);
         instance.setArguments(args);
@@ -78,6 +84,7 @@ public class GalleryFragmentDelegate {
             ArrayList<Uri> data) {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
+        args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, spanCount);
         args.putStringArrayList(ARG_DATA, toStringArrayList(data));
@@ -137,6 +144,16 @@ public class GalleryFragmentDelegate {
         mRecyclerView.scrollToPosition(position);
     }
 
+    public void setEmptyResource(int emptyResource) {
+        //
+        mEmptyResource = emptyResource;
+        mIsEmptyResourceFieldAvailable = true;
+
+        if (mAdapter != null) {
+            mAdapter.setEmptyResource(mEmptyResource);
+        }
+    }
+
     public void setLayout(int layout, int spanCount) {
         //
         mLayout = layout;
@@ -144,12 +161,10 @@ public class GalleryFragmentDelegate {
         mIsLayoutFieldAvailable = true;
         mIsSpanCountFieldAvailable = true;
 
-        if (mAdapter == null) {
-            return;
+        if (mRecyclerView != null) {
+            mRecyclerView.setLayoutManager(
+                    GalleryFragmentParams.resolveLayoutManager(mContext, mLayout, mSpanCount));
         }
-
-        mRecyclerView.setLayoutManager(
-                GalleryFragmentParams.resolveLayoutManager(mContext, mLayout, mSpanCount));
     }
 
     public void onAttach(Context context) {
@@ -179,6 +194,7 @@ public class GalleryFragmentDelegate {
         ArrayList<String> data = null;
         if (savedInstanceState != null) {
             mResource = savedInstanceState.getInt(SAVE_RESOURCE);
+            mEmptyResource = savedInstanceState.getInt(SAVE_EMPTY_RESOURCE);
             mLayout = savedInstanceState.getInt(SAVE_LAYOUT);
             mSpanCount = savedInstanceState.getInt(SAVE_SPAN_COUNT, 2);
             data = savedInstanceState.getStringArrayList(SAVE_DATA);
@@ -186,6 +202,9 @@ public class GalleryFragmentDelegate {
             if (args != null) {
                 if (!mIsResourceFieldAvailable) {
                     mResource = args.getInt(ARG_RESOURCE);
+                }
+                if (!mIsEmptyResourceFieldAvailable) {
+                    mEmptyResource = args.getInt(ARG_EMPTY_RESOURCE);
                 }
                 if (!mIsLayoutFieldAvailable) {
                     mLayout = args.getInt(ARG_LAYOUT);
@@ -211,6 +230,9 @@ public class GalleryFragmentDelegate {
             mAdapter = new ImageAdapter(mContext, mResource, null, mOnItemClickListener);
         }
 
+        // empty resource
+        mAdapter.setEmptyResource(mEmptyResource);
+
         // bitmap loader
         mAdapter.setBitmapLoader(mBitmapLoader);
 
@@ -232,6 +254,7 @@ public class GalleryFragmentDelegate {
 
     public void onSaveInstanceState(Bundle outState) {
         outState.putInt(SAVE_RESOURCE, mResource);
+        outState.putInt(SAVE_EMPTY_RESOURCE, mEmptyResource);
         outState.putInt(SAVE_LAYOUT, mLayout);
         outState.putInt(SAVE_SPAN_COUNT, mSpanCount);
         outState.putStringArrayList(SAVE_DATA, toStringArrayList(mAdapter.getAdapterData()));

@@ -75,6 +75,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     private Context mContext;
     private int mResource;
+    private int mEmptyResource = 0;
     private ArrayList<Uri> mAdapterData;
     private OnItemClickListener mListener;
 
@@ -101,6 +102,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         mResource = resource;
         mAdapterData = data;
         mListener = listener;
+    }
+
+    public void setEmptyResource(int emptyResource) {
+        mEmptyResource = emptyResource;
     }
 
     public void setAdapterData(ArrayList<Uri> data) {
@@ -200,7 +205,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 });
             } else {
 
-                imageView.setImageResource(android.R.drawable.alert_light_frame);
+                if (mEmptyResource != 0) {
+                    imageView.setImageResource(mEmptyResource);
+                } else {
+                    imageView.setImageResource(android.R.drawable.alert_light_frame);
+                }
+
                 holder.setImageTextNull();
                 holder.setExifTextNull();
 

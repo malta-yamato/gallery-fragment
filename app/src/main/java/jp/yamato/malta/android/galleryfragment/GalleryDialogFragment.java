@@ -40,7 +40,8 @@ public class GalleryDialogFragment extends DialogFragment {
         return instance;
     }
 
-    public static GalleryDialogFragment newInstance(int resource, int spanCount, ArrayList<Uri> data) {
+    public static GalleryDialogFragment newInstance(int resource, int spanCount,
+            ArrayList<Uri> data) {
         GalleryDialogFragment instance = new GalleryDialogFragment();
         GalleryFragmentDelegate.setArguments(instance, resource, spanCount, data);
         return instance;
@@ -60,6 +61,10 @@ public class GalleryDialogFragment extends DialogFragment {
 
     public void setResource(int resource) {
         mDelegate.setResource(resource);
+    }
+
+    public void setEmptyResource(int resource) {
+        mDelegate.setEmptyResource(resource);
     }
 
     public void setLayout(int layout, int spanCount) {
