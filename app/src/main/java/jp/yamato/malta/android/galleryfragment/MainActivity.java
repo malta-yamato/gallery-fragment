@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity
                     (GalleryFragment) getSupportFragmentManager().findFragmentById(R.id.container);
         }
 
+        mFragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_HORIZONTAL, 0);
+
         //
         // check permission
         //

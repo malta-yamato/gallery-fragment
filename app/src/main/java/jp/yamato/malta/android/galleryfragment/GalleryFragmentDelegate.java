@@ -48,6 +48,10 @@ public class GalleryFragmentDelegate {
     private int mLayout;
     private int mSpanCount;
 
+    private boolean mIsResourceFieldAvailable = false;
+    private boolean mIsLayoutFieldAvailable = false;
+    private boolean mIsSpanCountFieldAvailable = false;
+
     private DeferredOperations mDeferredOperations;
 
     public GalleryFragmentDelegate() {
@@ -106,6 +110,7 @@ public class GalleryFragmentDelegate {
     public void setResource(int resource) {
         //
         mResource = resource;
+        mIsResourceFieldAvailable = true;
 
         if (mAdapter == null) {
             return;
@@ -136,6 +141,8 @@ public class GalleryFragmentDelegate {
         //
         mLayout = layout;
         mSpanCount = spanCount;
+        mIsLayoutFieldAvailable = true;
+        mIsSpanCountFieldAvailable = true;
 
         if (mAdapter == null) {
             return;
@@ -146,7 +153,7 @@ public class GalleryFragmentDelegate {
     }
 
     public void onAttach(Context context) {
-        mContext=context;
+        mContext = context;
         if (context instanceof ImageAdapter.LoadTask.BitmapLoader) {
             mBitmapLoader = (ImageAdapter.LoadTask.BitmapLoader) context;
         } else {
@@ -177,9 +184,15 @@ public class GalleryFragmentDelegate {
             data = savedInstanceState.getStringArrayList(SAVE_DATA);
         } else {
             if (args != null) {
-                mResource = args.getInt(ARG_RESOURCE);
-                mLayout = args.getInt(ARG_LAYOUT);
-                mSpanCount = args.getInt(ARG_SPAN_COUNT, 2);
+                if (!mIsResourceFieldAvailable) {
+                    mResource = args.getInt(ARG_RESOURCE);
+                }
+                if (!mIsLayoutFieldAvailable) {
+                    mLayout = args.getInt(ARG_LAYOUT);
+                }
+                if (!mIsSpanCountFieldAvailable) {
+                    mSpanCount = args.getInt(ARG_SPAN_COUNT, 2);
+                }
                 data = args.getStringArrayList(ARG_DATA);
             }
         }
@@ -192,9 +205,8 @@ public class GalleryFragmentDelegate {
 
         // set adapter
         if (data != null) {
-            mAdapter =
-                    new ImageAdapter(mContext, mResource, toUriArrayList(data),
-                            mOnItemClickListener);
+            mAdapter = new ImageAdapter(mContext, mResource, toUriArrayList(data),
+                    mOnItemClickListener);
         } else {
             mAdapter = new ImageAdapter(mContext, mResource, null, mOnItemClickListener);
         }
@@ -222,8 +234,7 @@ public class GalleryFragmentDelegate {
         outState.putInt(SAVE_RESOURCE, mResource);
         outState.putInt(SAVE_LAYOUT, mLayout);
         outState.putInt(SAVE_SPAN_COUNT, mSpanCount);
-        outState.putStringArrayList(SAVE_DATA,
-                toStringArrayList(mAdapter.getAdapterData()));
+        outState.putStringArrayList(SAVE_DATA, toStringArrayList(mAdapter.getAdapterData()));
     }
 
     public void onDestroy() {
@@ -254,6 +265,5 @@ public class GalleryFragmentDelegate {
         }
         return uriList;
     }
-
 
 }
