@@ -37,10 +37,11 @@ public class GalleryFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private ImageAdapter mAdapter;
 
-    private int mSpanCount = 2;
+    private ImageAdapter.LoadTask.BitmapLoader mBitmapLoader;
 
     // adapter
     private int mResource;
+    private int mSpanCount = 2;
 
     private DeferredOperations mDeferredOperations;
 
@@ -106,7 +107,6 @@ public class GalleryFragment extends Fragment {
         }
 
         ArrayList<Uri> data = mAdapter.getAdapterData();
-        ImageAdapter.LoadTask.BitmapLoader bitmapLoader = mAdapter.getBitmapLoader();
         Map<String, ImageAdapter.Formatter> formatter = mAdapter.getFormatter();
 
         int position = 0;
@@ -118,27 +118,18 @@ public class GalleryFragment extends Fragment {
         mAdapter.destroy();
 
         mAdapter = new ImageAdapter(getContext(), mResource, data, mOnItemClickListener);
-        mAdapter.setBitmapLoader(bitmapLoader);
+        mAdapter.setBitmapLoader(mBitmapLoader);
         mAdapter.swapFormatter(formatter);
 
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.scrollToPosition(position);
     }
 
-    public void setLayoutManager(final RecyclerView.LayoutManager layoutManager){
+    public void setLayoutManager(final RecyclerView.LayoutManager layoutManager) {
         mDeferredOperations.offer(new Runnable() {
             @Override
             public void run() {
                 mRecyclerView.setLayoutManager(layoutManager);
-            }
-        });
-    }
-
-    public void setBitmapLoader(final ImageAdapter.LoadTask.BitmapLoader loader) {
-        mDeferredOperations.offer(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.setBitmapLoader(loader);
             }
         });
     }
@@ -155,9 +146,21 @@ public class GalleryFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        if (context instanceof ImageAdapter.LoadTask.BitmapLoader) {
+            mBitmapLoader = (ImageAdapter.LoadTask.BitmapLoader) context;
+        } else {
+            throw new IllegalArgumentException("context must be instance of BitmapLoader");
+        }
         if (context instanceof ImageAdapter.OnItemClickListener) {
             mOnItemClickListener = (ImageAdapter.OnItemClickListener) context;
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mBitmapLoader = null;
+        mOnItemClickListener = null;
     }
 
     @Nullable
@@ -191,6 +194,8 @@ public class GalleryFragment extends Fragment {
         } else {
             mAdapter = new ImageAdapter(getContext(), mResource, null, mOnItemClickListener);
         }
+        mAdapter.setBitmapLoader(mBitmapLoader);
+
         mRecyclerView.setAdapter(mAdapter);
 
         mDeferredOperations.release();

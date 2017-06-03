@@ -32,8 +32,8 @@ import java.util.Date;
 import android.support.media.ExifInterface;
 
 public class MainActivity extends AppCompatActivity
-        implements ExceptionHandler.Callback, ImageAdapter.OnItemClickListener,
-        LoaderManager.LoaderCallbacks<Cursor> {
+        implements ExceptionHandler.Callback, ImageAdapter.LoadTask.BitmapLoader,
+        ImageAdapter.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
     @SuppressWarnings("unused")
     private static final String TAG = "MainActivity";
 
@@ -60,16 +60,6 @@ public class MainActivity extends AppCompatActivity
             mFragment =
                     (GalleryFragment) getSupportFragmentManager().findFragmentById(R.id.container);
         }
-
-        // BitmapLoader setting
-        mFragment.setBitmapLoader(new ImageAdapter.LoadTask.BitmapLoader() {
-            @Override
-            public Bitmap loadBitmap(Uri uri) {
-                long id = Long.valueOf(uri.getLastPathSegment());
-                return MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), id,
-                        MediaStore.Images.Thumbnails.MINI_KIND, null);
-            }
-        });
 
         // Formatter setting
         mFragment.setFormatter(ImageAdapter.IMAGE_DATE_TAKEN, new ImageAdapter.Formatter() {
@@ -124,6 +114,14 @@ public class MainActivity extends AppCompatActivity
         }
         mTraceFile = new File(appDir, "stack-trace.txt");
 //        Log.d(TAG, "trace file = " + mTraceFile.getPath());
+    }
+
+    @Override
+    public Bitmap loadBitmap(Uri uri) {
+        long id = Long.valueOf(uri.getLastPathSegment());
+        return MediaStore.Images.Thumbnails
+                .getThumbnail(getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND,
+                        null);
     }
 
     @Override

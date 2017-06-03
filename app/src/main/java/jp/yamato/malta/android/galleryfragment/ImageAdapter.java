@@ -122,10 +122,6 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         mBitmapLoader = loader;
     }
 
-    public LoadTask.BitmapLoader getBitmapLoader() {
-        return mBitmapLoader;
-    }
-
     public void setFormatter(String tag, Formatter formatter) {
         mFormatter.put(tag, formatter);
     }
