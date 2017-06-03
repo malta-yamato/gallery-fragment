@@ -57,7 +57,7 @@ public class GalleryFragmentDelegate {
     public static void setArguments(Fragment instance, int resource) {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
-        args.putInt(ARG_LAYOUT, GalleryFragmentUtils.GRID_LAYOUT);
+        args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, 2);
         instance.setArguments(args);
     }
@@ -65,7 +65,7 @@ public class GalleryFragmentDelegate {
     public static void setArguments(Fragment instance, int resource, int spanCount) {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
-        args.putInt(ARG_LAYOUT, GalleryFragmentUtils.GRID_LAYOUT);
+        args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, spanCount);
         instance.setArguments(args);
     }
@@ -74,9 +74,9 @@ public class GalleryFragmentDelegate {
             ArrayList<Uri> data) {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
-        args.putInt(ARG_LAYOUT, GalleryFragmentUtils.GRID_LAYOUT);
+        args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, spanCount);
-        args.putStringArrayList(ARG_DATA, GalleryFragmentUtils.toStringArrayList(data));
+        args.putStringArrayList(ARG_DATA, toStringArrayList(data));
         instance.setArguments(args);
     }
 
@@ -142,7 +142,7 @@ public class GalleryFragmentDelegate {
         }
 
         mRecyclerView.setLayoutManager(
-                GalleryFragmentUtils.resolveLayoutManager(mContext, mLayout, mSpanCount));
+                GalleryFragmentParams.resolveLayoutManager(mContext, mLayout, mSpanCount));
     }
 
     public void onAttach(Context context) {
@@ -188,12 +188,12 @@ public class GalleryFragmentDelegate {
         mRecyclerView =
                 (RecyclerView) inflater.inflate(R.layout.simple_recyclerview, container, false);
         mRecyclerView.setLayoutManager(
-                GalleryFragmentUtils.resolveLayoutManager(mContext, mLayout, mSpanCount));
+                GalleryFragmentParams.resolveLayoutManager(mContext, mLayout, mSpanCount));
 
         // set adapter
         if (data != null) {
             mAdapter =
-                    new ImageAdapter(mContext, mResource, GalleryFragmentUtils.toUriArrayList(data),
+                    new ImageAdapter(mContext, mResource, toUriArrayList(data),
                             mOnItemClickListener);
         } else {
             mAdapter = new ImageAdapter(mContext, mResource, null, mOnItemClickListener);
@@ -223,12 +223,37 @@ public class GalleryFragmentDelegate {
         outState.putInt(SAVE_LAYOUT, mLayout);
         outState.putInt(SAVE_SPAN_COUNT, mSpanCount);
         outState.putStringArrayList(SAVE_DATA,
-                GalleryFragmentUtils.toStringArrayList(mAdapter.getAdapterData()));
+                toStringArrayList(mAdapter.getAdapterData()));
     }
 
     public void onDestroy() {
         // destroy
         mAdapter.destroy();
     }
+
+    //
+    //
+    //
+
+    private static ArrayList<String> toStringArrayList(ArrayList<Uri> uriList) {
+        ArrayList<String> stringList = new ArrayList<>();
+        if (uriList != null) {
+            for (int i = 0; i < uriList.size(); i++) {
+                stringList.add(uriList.get(i).toString());
+            }
+        }
+        return stringList;
+    }
+
+    private static ArrayList<Uri> toUriArrayList(ArrayList<String> stringList) {
+        ArrayList<Uri> uriList = new ArrayList<>();
+        if (stringList != null) {
+            for (int i = 0; i < stringList.size(); i++) {
+                uriList.add(Uri.parse(stringList.get(i)));
+            }
+        }
+        return uriList;
+    }
+
 
 }

@@ -15,7 +15,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.view.View;
 import android.widget.Toast;
 
@@ -181,19 +180,19 @@ public class MainActivity extends AppCompatActivity
         mCurrentLayoutMode = (mCurrentLayoutMode + 1) % 5;
         switch (mCurrentLayoutMode) {
             case 0:
-                mFragment.setLayout(GalleryFragmentUtils.GRID_LAYOUT, 2);
+                mFragment.setLayout(GalleryFragmentParams.GRID_LAYOUT, 2);
                 break;
             case 1:
-                mFragment.setLayout(GalleryFragmentUtils.GRID_LAYOUT, 3);
+                mFragment.setLayout(GalleryFragmentParams.GRID_LAYOUT, 3);
                 break;
             case 2:
-                mFragment.setLayout(GalleryFragmentUtils.GRID_LAYOUT, 4);
+                mFragment.setLayout(GalleryFragmentParams.GRID_LAYOUT, 4);
                 break;
             case 3:
-                mFragment.setLayout(GalleryFragmentUtils.LINEAR_LAYOUT_HORIZONTAL, 0);
+                mFragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_HORIZONTAL, 0);
                 break;
             case 4:
-                mFragment.setLayout(GalleryFragmentUtils.LINEAR_LAYOUT_VERTICAL, 0);
+                mFragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_VERTICAL, 0);
                 break;
         }
     }
