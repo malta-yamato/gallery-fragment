@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -197,6 +198,27 @@ public class MainActivity extends AppCompatActivity
                 mFragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_VERTICAL, 0);
                 break;
         }
+    }
+
+    public void onDialogButtonClick(View view) {
+        ArrayList<Uri> data = new ArrayList<>();
+        Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[]{MediaStore.Images.Media._ID}, null, null,
+                MediaStore.Images.Media.DATE_TAKEN + " DESC");
+        if (cursor != null) {
+            for (int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToPosition(i);
+                long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID));
+                Uri uri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        String.valueOf(id));
+                data.add(uri);
+            }
+            cursor.close();
+        }
+
+        DialogFragment fragment =
+                GalleryDialogFragment.newInstance(R.layout.simple_selectable_image_item, 2, data);
+        fragment.show(getSupportFragmentManager(), "dialog");
     }
 
     //

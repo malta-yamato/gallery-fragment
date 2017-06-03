@@ -21,6 +21,14 @@
         android:text="Change layout"
         tools:ignore="HardcodedText"/>
 
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onDialogButtonClick"
+        android:text="Dialog"
+        tools:ignore="HardcodedText"/>
+
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
