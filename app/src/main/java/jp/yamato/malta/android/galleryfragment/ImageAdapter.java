@@ -122,16 +122,15 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         mBitmapLoader = loader;
     }
 
-    public void setFormatter(String tag, Formatter formatter) {
+    public void addFormatter(String tag, Formatter formatter) {
         mFormatter.put(tag, formatter);
     }
 
-    public void swapFormatter(@NonNull Map<String, Formatter> formatter) {
+    public void swapFormatter(Map<String, Formatter> formatter) {
+        if (formatter == null) {
+            throw new IllegalArgumentException("formatter is null");
+        }
         mFormatter = formatter;
-    }
-
-    public Map<String, Formatter> getFormatter() {
-        return mFormatter;
     }
 
     @Override

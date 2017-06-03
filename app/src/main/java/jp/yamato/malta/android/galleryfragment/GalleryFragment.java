@@ -33,11 +33,12 @@ public class GalleryFragment extends Fragment {
     private static final String SAVE_SPAN_COUNT = "save_span_count";
     private static final String SAVE_DATA = "save_data";
 
-    private ImageAdapter.OnItemClickListener mOnItemClickListener;
     private RecyclerView mRecyclerView;
     private ImageAdapter mAdapter;
 
     private ImageAdapter.LoadTask.BitmapLoader mBitmapLoader;
+    private ImageAdapter.OnItemClickListener mOnItemClickListener;
+    private FormatterPickable mFormatterPickable;
 
     // adapter
     private int mResource;
@@ -107,7 +108,7 @@ public class GalleryFragment extends Fragment {
         }
 
         ArrayList<Uri> data = mAdapter.getAdapterData();
-        Map<String, ImageAdapter.Formatter> formatter = mAdapter.getFormatter();
+        Map<String, ImageAdapter.Formatter> formatter = mFormatterPickable.pickFormatter();
 
         int position = 0;
         View child = mRecyclerView.getChildAt(0);
@@ -119,7 +120,9 @@ public class GalleryFragment extends Fragment {
 
         mAdapter = new ImageAdapter(getContext(), mResource, data, mOnItemClickListener);
         mAdapter.setBitmapLoader(mBitmapLoader);
-        mAdapter.swapFormatter(formatter);
+        if (formatter != null) {
+            mAdapter.swapFormatter(formatter);
+        }
 
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.scrollToPosition(position);
@@ -134,15 +137,6 @@ public class GalleryFragment extends Fragment {
         });
     }
 
-    public void setFormatter(final String tag, final ImageAdapter.Formatter formatter) {
-        mDeferredOperations.offer(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.setFormatter(tag, formatter);
-            }
-        });
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -150,6 +144,9 @@ public class GalleryFragment extends Fragment {
             mBitmapLoader = (ImageAdapter.LoadTask.BitmapLoader) context;
         } else {
             throw new IllegalArgumentException("context must be instance of BitmapLoader");
+        }
+        if (context instanceof FormatterPickable) {
+            mFormatterPickable = (FormatterPickable) context;
         }
         if (context instanceof ImageAdapter.OnItemClickListener) {
             mOnItemClickListener = (ImageAdapter.OnItemClickListener) context;
@@ -160,6 +157,7 @@ public class GalleryFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mBitmapLoader = null;
+        mFormatterPickable = null;
         mOnItemClickListener = null;
     }
 
@@ -194,7 +192,18 @@ public class GalleryFragment extends Fragment {
         } else {
             mAdapter = new ImageAdapter(getContext(), mResource, null, mOnItemClickListener);
         }
+
+        // bitmap loader
         mAdapter.setBitmapLoader(mBitmapLoader);
+
+        // other objects
+        if (mFormatterPickable != null) {
+            //formatter
+            Map<String, ImageAdapter.Formatter> formatter = mFormatterPickable.pickFormatter();
+            if (formatter != null) {
+                mAdapter.swapFormatter(formatter);
+            }
+        }
 
         mRecyclerView.setAdapter(mAdapter);
 

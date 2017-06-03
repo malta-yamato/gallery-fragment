@@ -28,12 +28,14 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.support.media.ExifInterface;
 
 public class MainActivity extends AppCompatActivity
         implements ExceptionHandler.Callback, ImageAdapter.LoadTask.BitmapLoader,
-        ImageAdapter.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+        ImageAdapter.OnItemClickListener, FormatterPickable, LoaderManager.LoaderCallbacks<Cursor> {
     @SuppressWarnings("unused")
     private static final String TAG = "MainActivity";
 
@@ -60,29 +62,6 @@ public class MainActivity extends AppCompatActivity
             mFragment =
                     (GalleryFragment) getSupportFragmentManager().findFragmentById(R.id.container);
         }
-
-        // Formatter setting
-        mFragment.setFormatter(ImageAdapter.IMAGE_DATE_TAKEN, new ImageAdapter.Formatter() {
-            @Override
-            public String format(String str) {
-                try {
-                    long time = Long.valueOf(str);
-                    return SimpleDateFormat.getDateTimeInstance().format(new Date(time));
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-                return "";
-            }
-        });
-        mFragment.setFormatter(ImageAdapter.EXIF_MODEL, new ImageAdapter.Formatter() {
-            @Override
-            public String format(String str) {
-                if (str != null) {
-                    return "[" + str + "]";
-                }
-                return "";
-            }
-        });
 
         //
         // check permission
@@ -122,6 +101,33 @@ public class MainActivity extends AppCompatActivity
         return MediaStore.Images.Thumbnails
                 .getThumbnail(getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND,
                         null);
+    }
+
+    @Override
+    public Map<String, ImageAdapter.Formatter> pickFormatter() {
+        Map<String, ImageAdapter.Formatter> map = new HashMap<>();
+        map.put(ImageAdapter.IMAGE_DATE_TAKEN, new ImageAdapter.Formatter() {
+            @Override
+            public String format(String str) {
+                try {
+                    long time = Long.valueOf(str);
+                    return SimpleDateFormat.getDateTimeInstance().format(new Date(time));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+                return "";
+            }
+        });
+        map.put(ImageAdapter.EXIF_MODEL, new ImageAdapter.Formatter() {
+            @Override
+            public String format(String str) {
+                if (str != null) {
+                    return "[" + str + "]";
+                }
+                return "";
+            }
+        });
+        return map;
     }
 
     @Override
