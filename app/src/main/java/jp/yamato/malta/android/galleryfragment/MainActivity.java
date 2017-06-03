@@ -175,12 +175,27 @@ public class MainActivity extends AppCompatActivity
         mLayoutIndex = (mLayoutIndex + 1) % mLayoutResources.length;
     }
 
-    private int mCurrentSpanExtension = 0;
+    private int mCurrentLayoutMode = 0;
 
-    public void onChangeSpanCountButtonClick(View view) {
-        mCurrentSpanExtension = (mCurrentSpanExtension + 1) % 3;
-        int spanCount = 2 + mCurrentSpanExtension;
-        mFragment.setLayoutManager(new GridLayoutManager(this, spanCount));
+    public void onChangeLayoutButtonClick(View view) {
+        mCurrentLayoutMode = (mCurrentLayoutMode + 1) % 5;
+        switch (mCurrentLayoutMode) {
+            case 0:
+                mFragment.setLayout(GalleryFragmentUtils.GRID_LAYOUT, 2);
+                break;
+            case 1:
+                mFragment.setLayout(GalleryFragmentUtils.GRID_LAYOUT, 3);
+                break;
+            case 2:
+                mFragment.setLayout(GalleryFragmentUtils.GRID_LAYOUT, 4);
+                break;
+            case 3:
+                mFragment.setLayout(GalleryFragmentUtils.LINEAR_LAYOUT_HORIZONTAL, 0);
+                break;
+            case 4:
+                mFragment.setLayout(GalleryFragmentUtils.LINEAR_LAYOUT_VERTICAL, 0);
+                break;
+        }
     }
 
     //

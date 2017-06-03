@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,10 +25,12 @@ public class GalleryFragment extends Fragment {
     private static final String TAG = "GalleryFragment";
 
     private static final String ARG_RESOURCE = "arg_resource";
+    private static final String ARG_LAYOUT = "arg_layout";
     private static final String ARG_SPAN_COUNT = "arg_span_count";
     private static final String ARG_DATA = "arg_data";
 
     private static final String SAVE_RESOURCE = "save_resource";
+    private static final String SAVE_LAYOUT = "save_layout";
     private static final String SAVE_SPAN_COUNT = "save_span_count";
     private static final String SAVE_DATA = "save_data";
 
@@ -40,9 +41,10 @@ public class GalleryFragment extends Fragment {
     private ImageAdapter.OnItemClickListener mOnItemClickListener;
     private FormatterPickable mFormatterPickable;
 
-    // adapter
+    // state
     private int mResource;
-    private int mSpanCount = 2;
+    private int mLayout;
+    private int mSpanCount;
 
     private DeferredOperations mDeferredOperations;
 
@@ -54,6 +56,8 @@ public class GalleryFragment extends Fragment {
         GalleryFragment instance = new GalleryFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
+        args.putInt(ARG_LAYOUT, GalleryFragmentUtils.GRID_LAYOUT);
+        args.putInt(ARG_SPAN_COUNT, 2);
         instance.setArguments(args);
         return instance;
     }
@@ -62,6 +66,7 @@ public class GalleryFragment extends Fragment {
         GalleryFragment instance = new GalleryFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
+        args.putInt(ARG_LAYOUT, GalleryFragmentUtils.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, spanCount);
         instance.setArguments(args);
         return instance;
@@ -71,6 +76,7 @@ public class GalleryFragment extends Fragment {
         GalleryFragment instance = new GalleryFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
+        args.putInt(ARG_LAYOUT, GalleryFragmentUtils.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, spanCount);
         args.putStringArrayList(ARG_DATA, GalleryFragmentUtils.toStringArrayList(data));
         instance.setArguments(args);
@@ -101,6 +107,7 @@ public class GalleryFragment extends Fragment {
     }
 
     public void setResource(int resource) {
+        //
         mResource = resource;
 
         if (mAdapter == null) {
@@ -128,13 +135,17 @@ public class GalleryFragment extends Fragment {
         mRecyclerView.scrollToPosition(position);
     }
 
-    public void setLayoutManager(final RecyclerView.LayoutManager layoutManager) {
-        mDeferredOperations.offer(new Runnable() {
-            @Override
-            public void run() {
-                mRecyclerView.setLayoutManager(layoutManager);
-            }
-        });
+    public void setLayout(int layout, int spanCount) {
+        //
+        mLayout = layout;
+        mSpanCount = spanCount;
+
+        if (mAdapter == null) {
+            return;
+        }
+
+        mRecyclerView.setLayoutManager(
+                GalleryFragmentUtils.resolveLayoutManager(getContext(), mLayout, mSpanCount));
     }
 
     @Override
@@ -168,12 +179,14 @@ public class GalleryFragment extends Fragment {
         ArrayList<String> data = null;
         if (savedInstanceState != null) {
             mResource = savedInstanceState.getInt(SAVE_RESOURCE);
+            mLayout = savedInstanceState.getInt(SAVE_LAYOUT);
             mSpanCount = savedInstanceState.getInt(SAVE_SPAN_COUNT, 2);
             data = savedInstanceState.getStringArrayList(SAVE_DATA);
         } else {
             Bundle args = getArguments();
             if (args != null) {
                 mResource = args.getInt(ARG_RESOURCE);
+                mLayout = args.getInt(ARG_LAYOUT);
                 mSpanCount = args.getInt(ARG_SPAN_COUNT, 2);
                 data = args.getStringArrayList(ARG_DATA);
             }
@@ -182,8 +195,8 @@ public class GalleryFragment extends Fragment {
         // create recycler view
         mRecyclerView =
                 (RecyclerView) inflater.inflate(R.layout.simple_recyclerview, container, false);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), mSpanCount);
-        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setLayoutManager(
+                GalleryFragmentUtils.resolveLayoutManager(getContext(), mLayout, mSpanCount));
 
         // set adapter
         if (data != null) {
@@ -216,6 +229,7 @@ public class GalleryFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SAVE_RESOURCE, mResource);
+        outState.putInt(SAVE_LAYOUT, mLayout);
         outState.putInt(SAVE_SPAN_COUNT, mSpanCount);
         outState.putStringArrayList(SAVE_DATA,
                 GalleryFragmentUtils.toStringArrayList(mAdapter.getAdapterData()));
