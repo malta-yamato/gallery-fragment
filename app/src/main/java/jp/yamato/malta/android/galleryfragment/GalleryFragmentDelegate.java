@@ -135,12 +135,7 @@ public class GalleryFragmentDelegate {
         mAdapter.destroy();
 
         mAdapter = new ImageAdapter(mContext, mResource, data, mOnItemClickListener);
-        mAdapter.setBitmapLoader(mBitmapLoader);
-        if (formatter != null) {
-            mAdapter.swapFormatter(formatter);
-        }
-
-        mRecyclerView.setAdapter(mAdapter);
+        setAdapter();
         mRecyclerView.scrollToPosition(position);
     }
 
@@ -230,23 +225,7 @@ public class GalleryFragmentDelegate {
             mAdapter = new ImageAdapter(mContext, mResource, null, mOnItemClickListener);
         }
 
-        // empty resource
-        mAdapter.setEmptyResource(mEmptyResource);
-
-        // bitmap loader
-        mAdapter.setBitmapLoader(mBitmapLoader);
-
-        // other objects
-        if (mFormatterPickable != null) {
-            //formatter
-            Map<String, ImageAdapter.Formatter> formatter = mFormatterPickable.pickFormatter();
-            if (formatter != null) {
-                mAdapter.swapFormatter(formatter);
-            }
-        }
-
-        mRecyclerView.setAdapter(mAdapter);
-
+        setAdapter();
         mDeferredOperations.release();
 
         return mRecyclerView;
@@ -263,6 +242,20 @@ public class GalleryFragmentDelegate {
     public void onDestroy() {
         // destroy
         mAdapter.destroy();
+    }
+
+    private void setAdapter(){
+        mAdapter.setEmptyResource(mEmptyResource);
+        mAdapter.setBitmapLoader(mBitmapLoader);
+        //formatter
+        if (mFormatterPickable != null) {
+            Map<String, ImageAdapter.Formatter> formatter = mFormatterPickable.pickFormatter();
+            if (formatter != null) {
+                mAdapter.swapFormatter(formatter);
+            }
+        }
+
+        mRecyclerView.setAdapter(mAdapter);
     }
 
     //
