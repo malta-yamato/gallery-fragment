@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.media.ExifInterface;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
@@ -146,12 +145,25 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 //            Log.d(TAG, "onCreateViewHolder");
+
         View view = LayoutInflater.from(mContext).inflate(mResource, parent, false);
         if (!mIsInfoSetup) {
             setupInfo(view);
             mIsInfoSetup = true;
         }
-        return new ViewHolder(view, mImageTags, mExifTags);
+        final ViewHolder holder = new ViewHolder(view, mImageTags, mExifTags);
+
+        // item click mListener
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) {
+                    mListener.onItemClick(v, ImageAdapter.this, holder.getAdapterPosition());
+                }
+            }
+        });
+
+        return holder;
     }
 
     private void setupInfo(View view) {
@@ -200,6 +212,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         Bitmap bitmap = mBitmaps.get(position);
 
         if (bitmap == null) {
+
+//            Log.d(TAG, "onBindViewHolder: taskCount = " + LoadTask.sTasks.size());
             if (LoadTask.sTasks.size() >= mMaxTaskCount ||
                     LoadTask.sTasks.size() >= LoadTask.MAX_TASK_COUNT) {
                 LoadTask.cancelAll();
@@ -209,81 +223,82 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                         notifyDataSetChanged();
                     }
                 });
-            } else {
-
-                if (mEmptyResource != 0) {
-                    imageView.setImageResource(mEmptyResource);
-                } else {
-                    imageView.setImageResource(android.R.drawable.alert_light_frame);
-                }
-
-                holder.setImageTextNull();
-                holder.setExifTextNull();
-
-                boolean loadImageInfo = mImageInfoMap.get(position) == null;
-                boolean loadExifInfo = mExifInfoMap.get(position) == null;
-
-                LoadTask task = new LoadTask(mContext.getContentResolver(), uri, position, holder,
-                        mBitmapOrientationMap.get(position), mImageTags, mExifTags,
-                        new TaggingTask.OnApplyListener<Integer>() {
-                            @Override
-                            public TaggingTask.Result OnPostResult(Integer key,
-                                    TaggingTask.Result result0) {
-                                LoadTask.Result result = (LoadTask.Result) result0;
-                                if (result.isSuccessful) {
-                                    mBitmaps.put(key, result.bitmap);
-                                    //
-                                    if (result.orientation != null) {
-                                        mBitmapOrientationMap.put(key, result.orientation);
-                                    }
-                                    if (result.imageInfo != null) {
-                                        String[] imageInfo = result.imageInfo;
-                                        for (int i = 0; i < imageInfo.length; i++) {
-                                            Formatter formatter = mFormatter.get(mImageTags[i]);
-                                            if (formatter != null) {
-                                                imageInfo[i] = formatter.format(imageInfo[i]);
-                                            }
-                                        }
-                                        mImageInfoMap.put(key, result.imageInfo);
-                                    }
-                                    if (result.exifInfo != null) {
-                                        String[] exifInfo = result.exifInfo;
-                                        for (int i = 0; i < exifInfo.length; i++) {
-                                            Formatter formatter = mFormatter.get(mExifTags[i]);
-                                            if (formatter != null) {
-                                                exifInfo[i] = formatter.format(exifInfo[i]);
-                                            }
-                                        }
-                                        mExifInfoMap.put(key, result.exifInfo);
-                                    }
-                                }
-                                return null;
-                            }
-
-                            @Override
-                            public void OnApply(Integer key, TaggingTask.TaggedObject taggedObject,
-                                    TaggingTask.Result result0) {
-                                LoadTask.Result result = (LoadTask.Result) result0;
-                                ViewHolder holder = (ViewHolder) taggedObject;
-                                holder.imageView.setImageBitmap(result.bitmap);
-                                //
-                                String[] imageInfo = result.imageInfo;
-                                if (imageInfo == null) {
-                                    imageInfo = mImageInfoMap.get(key);
-                                }
-                                holder.setImageText(imageInfo);
-                                //
-                                String[] exifInfo = result.exifInfo;
-                                if (exifInfo == null) {
-                                    exifInfo = mExifInfoMap.get(key);
-                                }
-                                holder.setExifText(exifInfo);
-                            }
-                        });
-
-                task.setBitmapLoader(mBitmapLoader);
-                task.execute(loadImageInfo, loadExifInfo);
+                return;
             }
+
+            if (mEmptyResource != 0) {
+                imageView.setImageResource(mEmptyResource);
+            } else {
+                imageView.setImageResource(android.R.drawable.alert_light_frame);
+            }
+
+            holder.setImageTextNull();
+            holder.setExifTextNull();
+
+            boolean loadImageInfo = mImageInfoMap.get(position) == null;
+            boolean loadExifInfo = mExifInfoMap.get(position) == null;
+
+            LoadTask task = new LoadTask(mContext.getContentResolver(), uri, position, holder,
+                    mBitmapOrientationMap.get(position), mImageTags, mExifTags,
+                    new TaggingTask.OnApplyListener<Integer>() {
+                        @Override
+                        public TaggingTask.Result OnPostResult(Integer key,
+                                TaggingTask.Result result0) {
+                            LoadTask.Result result = (LoadTask.Result) result0;
+                            if (result.isSuccessful) {
+                                mBitmaps.put(key, result.bitmap);
+                                //
+                                if (result.orientation != null) {
+                                    mBitmapOrientationMap.put(key, result.orientation);
+                                }
+                                if (result.imageInfo != null) {
+                                    String[] imageInfo = result.imageInfo;
+                                    for (int i = 0; i < imageInfo.length; i++) {
+                                        Formatter formatter = mFormatter.get(mImageTags[i]);
+                                        if (formatter != null) {
+                                            imageInfo[i] = formatter.format(imageInfo[i]);
+                                        }
+                                    }
+                                    mImageInfoMap.put(key, result.imageInfo);
+                                }
+                                if (result.exifInfo != null) {
+                                    String[] exifInfo = result.exifInfo;
+                                    for (int i = 0; i < exifInfo.length; i++) {
+                                        Formatter formatter = mFormatter.get(mExifTags[i]);
+                                        if (formatter != null) {
+                                            exifInfo[i] = formatter.format(exifInfo[i]);
+                                        }
+                                    }
+                                    mExifInfoMap.put(key, result.exifInfo);
+                                }
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        public void OnApply(Integer key, TaggingTask.TaggedObject taggedObject,
+                                TaggingTask.Result result0) {
+                            LoadTask.Result result = (LoadTask.Result) result0;
+                            ViewHolder holder = (ViewHolder) taggedObject;
+                            holder.imageView.setImageBitmap(result.bitmap);
+                            //
+                            String[] imageInfo = result.imageInfo;
+                            if (imageInfo == null) {
+                                imageInfo = mImageInfoMap.get(key);
+                            }
+                            holder.setImageText(imageInfo);
+                            //
+                            String[] exifInfo = result.exifInfo;
+                            if (exifInfo == null) {
+                                exifInfo = mExifInfoMap.get(key);
+                            }
+                            holder.setExifText(exifInfo);
+                        }
+                    });
+
+            task.setBitmapLoader(mBitmapLoader);
+            task.execute(loadImageInfo, loadExifInfo);
+
         } else {
             imageView.setImageBitmap(bitmap);
 
@@ -295,15 +310,6 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
         }
 
-        // item click mListener
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mListener != null) {
-                    mListener.onItemClick(v, ImageAdapter.this, holder.getAdapterPosition());
-                }
-            }
-        });
     }
 
     @Override

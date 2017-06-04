@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -64,7 +63,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         mFragment.setEmptyResource(R.mipmap.ic_launcher_round);
-        mFragment.setMaxTaskCount(32);
+        mFragment.setMaxTaskCount(128);
         mFragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_HORIZONTAL, 0);
 
         //
