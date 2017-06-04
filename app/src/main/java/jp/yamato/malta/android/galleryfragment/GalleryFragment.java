@@ -77,7 +77,7 @@ public class GalleryFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mDelegate.onAttach(context);
+        mDelegate.onAttach(context, this);
     }
 
     @Override

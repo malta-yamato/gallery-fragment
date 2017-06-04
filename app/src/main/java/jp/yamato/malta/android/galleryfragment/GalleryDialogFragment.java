@@ -78,7 +78,7 @@ public class GalleryDialogFragment extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mDelegate.onAttach(context);
+        mDelegate.onAttach(context, this);
     }
 
     @Override

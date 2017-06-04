@@ -179,17 +179,29 @@ public class GalleryFragmentDelegate {
         }
     }
 
-    public void onAttach(Context context) {
+    public void onAttach(Context context, Fragment fragment) {
         mContext = context;
-        if (context instanceof ImageAdapter.LoadTask.BitmapLoader) {
+
+        // bitmap loader
+        if (fragment instanceof ImageAdapter.LoadTask.BitmapLoader) {
+            mBitmapLoader = (ImageAdapter.LoadTask.BitmapLoader) fragment;
+        } else if (context instanceof ImageAdapter.LoadTask.BitmapLoader) {
             mBitmapLoader = (ImageAdapter.LoadTask.BitmapLoader) context;
         } else {
-            throw new IllegalArgumentException("context must be instance of BitmapLoader");
+            throw new IllegalArgumentException("couldn't resolve BitmapLoader");
         }
-        if (context instanceof FormatterPickable) {
+
+        // formatter pickable
+        if (fragment instanceof FormatterPickable) {
+            mFormatterPickable = (FormatterPickable) fragment;
+        } else if (context instanceof FormatterPickable) {
             mFormatterPickable = (FormatterPickable) context;
         }
-        if (context instanceof ImageAdapter.OnItemClickListener) {
+
+        // OnItemClickListener
+        if (fragment instanceof ImageAdapter.OnItemClickListener) {
+            mOnItemClickListener = (ImageAdapter.OnItemClickListener) fragment;
+        } else if (context instanceof ImageAdapter.OnItemClickListener) {
             mOnItemClickListener = (ImageAdapter.OnItemClickListener) context;
         }
     }

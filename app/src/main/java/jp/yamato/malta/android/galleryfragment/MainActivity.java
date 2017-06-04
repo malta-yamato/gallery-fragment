@@ -218,8 +218,8 @@ public class MainActivity extends AppCompatActivity
             cursor.close();
         }
 
-        DialogFragment fragment =
-                GalleryDialogFragment.newInstance(R.layout.simple_selectable_image_item, 2, data);
+        CustomGalleryDialogFragment fragment = CustomGalleryDialogFragment
+                .newInstance(R.layout.simple_selectable_image_item, 2, data);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
 
