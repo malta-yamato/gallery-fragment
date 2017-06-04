@@ -88,6 +88,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private final SparseArray<String[]> mExifInfoMap = new SparseArray<>();
     private final SparseArray<String[]> mImageInfoMap = new SparseArray<>();
 
+    private int mMaxTaskCount = LoadTask.MAX_TASK_COUNT;
     private LoadTask.BitmapLoader mBitmapLoader = null;
 
     private Map<String, Formatter> mFormatter = new HashMap<>();
@@ -106,6 +107,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     public void setEmptyResource(int emptyResource) {
         mEmptyResource = emptyResource;
+    }
+
+    public void setMaxTaskCount(int maxTaskCount) {
+        mMaxTaskCount = maxTaskCount;
     }
 
     public void setAdapterData(ArrayList<Uri> data) {
@@ -195,7 +200,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         Bitmap bitmap = mBitmaps.get(position);
 
         if (bitmap == null) {
-            if (LoadTask.sTasks.size() >= LoadTask.MAX_TASK_COUNT) {
+            if (LoadTask.sTasks.size() >= mMaxTaskCount ||
+                    LoadTask.sTasks.size() >= LoadTask.MAX_TASK_COUNT) {
                 LoadTask.cancelAll();
                 imageView.post(new Runnable() {
                     @Override
@@ -407,7 +413,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     public static class LoadTask extends TaggingTask<Integer, Boolean> {
 
-        private static final int MAX_TASK_COUNT = 128;
+        public static final int MAX_TASK_COUNT = 128;
 
         private static Deque<LoadTask> sTasks = new LinkedList<>();
 

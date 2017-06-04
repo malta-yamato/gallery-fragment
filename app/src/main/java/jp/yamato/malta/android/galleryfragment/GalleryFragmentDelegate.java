@@ -26,12 +26,14 @@ public class GalleryFragmentDelegate {
 
     private static final String ARG_RESOURCE = "arg_resource";
     private static final String ARG_EMPTY_RESOURCE = "arg_empty_resource";
+    private static final String ARG_MAX_TASK_COUNT = "arg_max_task_count";
     private static final String ARG_LAYOUT = "arg_layout";
     private static final String ARG_SPAN_COUNT = "arg_span_count";
     private static final String ARG_DATA = "arg_data";
 
     private static final String SAVE_RESOURCE = "save_resource";
     private static final String SAVE_EMPTY_RESOURCE = "save_empty_resource";
+    private static final String SAVE_MAX_TASK_COUNT = "save_max_task_count";
     private static final String SAVE_LAYOUT = "save_layout";
     private static final String SAVE_SPAN_COUNT = "save_span_count";
     private static final String SAVE_DATA = "save_data";
@@ -48,11 +50,13 @@ public class GalleryFragmentDelegate {
     // state
     private int mResource;
     private int mEmptyResource;
+    private int mMaxTaskCount;
     private int mLayout;
     private int mSpanCount;
 
     private boolean mIsResourceFieldAvailable = false;
     private boolean mIsEmptyResourceFieldAvailable = false;
+    private boolean mIsMaxTaskCountAvailable = false;
     private boolean mIsLayoutFieldAvailable = false;
     private boolean mIsSpanCountFieldAvailable = false;
 
@@ -66,6 +70,7 @@ public class GalleryFragmentDelegate {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
+        args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
         args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, 2);
         instance.setArguments(args);
@@ -75,6 +80,7 @@ public class GalleryFragmentDelegate {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
+        args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
         args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, spanCount);
         instance.setArguments(args);
@@ -85,6 +91,7 @@ public class GalleryFragmentDelegate {
         Bundle args = new Bundle();
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
+        args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
         args.putInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
         args.putInt(ARG_SPAN_COUNT, spanCount);
         args.putStringArrayList(ARG_DATA, toStringArrayList(data));
@@ -149,6 +156,16 @@ public class GalleryFragmentDelegate {
         }
     }
 
+    public void setMaxTaskCount(int maxTaskCount) {
+        //
+        mMaxTaskCount = maxTaskCount;
+        mIsMaxTaskCountAvailable = true;
+
+        if (mAdapter != null) {
+            mAdapter.setMaxTaskCount(maxTaskCount);
+        }
+    }
+
     public void setLayout(int layout, int spanCount) {
         //
         mLayout = layout;
@@ -190,6 +207,7 @@ public class GalleryFragmentDelegate {
         if (savedInstanceState != null) {
             mResource = savedInstanceState.getInt(SAVE_RESOURCE);
             mEmptyResource = savedInstanceState.getInt(SAVE_EMPTY_RESOURCE);
+            mMaxTaskCount = savedInstanceState.getInt(SAVE_MAX_TASK_COUNT);
             mLayout = savedInstanceState.getInt(SAVE_LAYOUT);
             mSpanCount = savedInstanceState.getInt(SAVE_SPAN_COUNT, 2);
             data = savedInstanceState.getStringArrayList(SAVE_DATA);
@@ -200,6 +218,9 @@ public class GalleryFragmentDelegate {
                 }
                 if (!mIsEmptyResourceFieldAvailable) {
                     mEmptyResource = args.getInt(ARG_EMPTY_RESOURCE);
+                }
+                if (!mIsMaxTaskCountAvailable) {
+                    mMaxTaskCount = args.getInt(ARG_MAX_TASK_COUNT);
                 }
                 if (!mIsLayoutFieldAvailable) {
                     mLayout = args.getInt(ARG_LAYOUT);
@@ -234,6 +255,7 @@ public class GalleryFragmentDelegate {
     public void onSaveInstanceState(Bundle outState) {
         outState.putInt(SAVE_RESOURCE, mResource);
         outState.putInt(SAVE_EMPTY_RESOURCE, mEmptyResource);
+        outState.putInt(SAVE_MAX_TASK_COUNT, mMaxTaskCount);
         outState.putInt(SAVE_LAYOUT, mLayout);
         outState.putInt(SAVE_SPAN_COUNT, mSpanCount);
         outState.putStringArrayList(SAVE_DATA, toStringArrayList(mAdapter.getAdapterData()));
@@ -244,8 +266,9 @@ public class GalleryFragmentDelegate {
         mAdapter.destroy();
     }
 
-    private void setAdapter(){
+    private void setAdapter() {
         mAdapter.setEmptyResource(mEmptyResource);
+        mAdapter.setMaxTaskCount(mMaxTaskCount);
         mAdapter.setBitmapLoader(mBitmapLoader);
         //formatter
         if (mFormatterPickable != null) {

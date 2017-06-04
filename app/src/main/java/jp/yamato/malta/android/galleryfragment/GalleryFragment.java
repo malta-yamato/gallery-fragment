@@ -62,6 +62,10 @@ public class GalleryFragment extends Fragment {
         mDelegate.setResource(resource);
     }
 
+    public void setMaxTaskCount(int maxTaskCount) {
+        mDelegate.setMaxTaskCount(maxTaskCount);
+    }
+
     public void setEmptyResource(int resource) {
         mDelegate.setEmptyResource(resource);
     }

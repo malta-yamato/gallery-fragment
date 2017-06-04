@@ -67,6 +67,10 @@ public class GalleryDialogFragment extends DialogFragment {
         mDelegate.setEmptyResource(resource);
     }
 
+    public void setMaxTaskCount(int maxTaskCount) {
+        mDelegate.setMaxTaskCount(maxTaskCount);
+    }
+
     public void setLayout(int layout, int spanCount) {
         mDelegate.setLayout(layout, spanCount);
     }
