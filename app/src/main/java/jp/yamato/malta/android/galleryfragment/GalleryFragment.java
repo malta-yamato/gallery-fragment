@@ -58,16 +58,20 @@ public class GalleryFragment extends Fragment {
         return mDelegate.getAdapterDataItem(position);
     }
 
+    public void setTopResource(int topResource) {
+        mDelegate.setTopResource(topResource);
+    }
+
     public void setResource(int resource) {
         mDelegate.setResource(resource);
     }
 
-    public void setMaxTaskCount(int maxTaskCount) {
-        mDelegate.setMaxTaskCount(maxTaskCount);
-    }
-
     public void setEmptyResource(int resource) {
         mDelegate.setEmptyResource(resource);
+    }
+
+    public void setMaxTaskCount(int maxTaskCount) {
+        mDelegate.setMaxTaskCount(maxTaskCount);
     }
 
     public void setLayout(int layout, int spanCount) {

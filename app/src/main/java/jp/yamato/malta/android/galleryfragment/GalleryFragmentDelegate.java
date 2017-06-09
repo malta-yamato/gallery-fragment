@@ -24,6 +24,7 @@ public class GalleryFragmentDelegate {
     @SuppressWarnings("unused")
     private static final String TAG = "GalleryFragmentDelegate";
 
+    private static final String ARG_TOP_RESOURCE = "arg_top_resource";
     private static final String ARG_RESOURCE = "arg_resource";
     private static final String ARG_EMPTY_RESOURCE = "arg_empty_resource";
     private static final String ARG_MAX_TASK_COUNT = "arg_max_task_count";
@@ -31,6 +32,7 @@ public class GalleryFragmentDelegate {
     private static final String ARG_SPAN_COUNT = "arg_span_count";
     private static final String ARG_DATA = "arg_data";
 
+    private static final String SAVE_TOP_RESOURCE = "save_top_resource";
     private static final String SAVE_RESOURCE = "save_resource";
     private static final String SAVE_EMPTY_RESOURCE = "save_empty_resource";
     private static final String SAVE_MAX_TASK_COUNT = "save_max_task_count";
@@ -48,12 +50,14 @@ public class GalleryFragmentDelegate {
     private FormatterPickable mFormatterPickable;
 
     // state
+    private int mTopResource;
     private int mResource;
     private int mEmptyResource;
     private int mMaxTaskCount;
     private int mLayout;
     private int mSpanCount;
 
+    private boolean mIsTopResourceFieldAvailable = false;
     private boolean mIsResourceFieldAvailable = false;
     private boolean mIsEmptyResourceFieldAvailable = false;
     private boolean mIsMaxTaskCountAvailable = false;
@@ -68,6 +72,7 @@ public class GalleryFragmentDelegate {
 
     public static void setArguments(Fragment instance, int resource) {
         Bundle args = new Bundle();
+        args.putInt(ARG_TOP_RESOURCE, R.layout.simple_recyclerview);
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
@@ -78,6 +83,7 @@ public class GalleryFragmentDelegate {
 
     public static void setArguments(Fragment instance, int resource, int spanCount) {
         Bundle args = new Bundle();
+        args.putInt(ARG_TOP_RESOURCE, R.layout.simple_recyclerview);
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
@@ -89,6 +95,7 @@ public class GalleryFragmentDelegate {
     public static void setArguments(Fragment instance, int resource, int spanCount,
             ArrayList<Uri> data) {
         Bundle args = new Bundle();
+        args.putInt(ARG_TOP_RESOURCE, R.layout.simple_recyclerview);
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
@@ -119,6 +126,16 @@ public class GalleryFragmentDelegate {
             throw new IllegalStateException("get field is not ready");
         }
         return mAdapter.getAdapterDataItem(position);
+    }
+
+    public void setTopResource(int topResource) {
+        //
+        mTopResource = topResource;
+        mIsTopResourceFieldAvailable = true;
+
+        if (mAdapter != null) {
+            throw new IllegalStateException("cannot change top resource");
+        }
     }
 
     public void setResource(int resource) {
@@ -217,6 +234,7 @@ public class GalleryFragmentDelegate {
             @Nullable Bundle savedInstanceState, @Nullable Bundle args) {
         ArrayList<String> data = null;
         if (savedInstanceState != null) {
+            mTopResource = savedInstanceState.getInt(SAVE_TOP_RESOURCE);
             mResource = savedInstanceState.getInt(SAVE_RESOURCE);
             mEmptyResource = savedInstanceState.getInt(SAVE_EMPTY_RESOURCE);
             mMaxTaskCount = savedInstanceState.getInt(SAVE_MAX_TASK_COUNT);
@@ -225,6 +243,9 @@ public class GalleryFragmentDelegate {
             data = savedInstanceState.getStringArrayList(SAVE_DATA);
         } else {
             if (args != null) {
+                if (!mIsTopResourceFieldAvailable) {
+                    mTopResource = args.getInt(ARG_TOP_RESOURCE);
+                }
                 if (!mIsResourceFieldAvailable) {
                     mResource = args.getInt(ARG_RESOURCE);
                 }
@@ -245,8 +266,17 @@ public class GalleryFragmentDelegate {
         }
 
         // create recycler view
-        mRecyclerView =
-                (RecyclerView) inflater.inflate(R.layout.simple_recyclerview, container, false);
+        View topView = inflater.inflate(mTopResource, container, false);
+        if (topView instanceof RecyclerView) {
+            mRecyclerView = (RecyclerView) topView;
+        } else {
+            View view = topView.findViewById(R.id.recycler_view);
+            if (view instanceof RecyclerView) {
+                mRecyclerView = (RecyclerView) view;
+            } else {
+                throw new IllegalArgumentException("recycler view not found in layout");
+            }
+        }
         mRecyclerView.setLayoutManager(
                 GalleryFragmentParams.resolveLayoutManager(mContext, mLayout, mSpanCount));
 
@@ -261,10 +291,11 @@ public class GalleryFragmentDelegate {
         setAdapter();
         mDeferredOperations.release();
 
-        return mRecyclerView;
+        return topView;
     }
 
     public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(SAVE_TOP_RESOURCE, mTopResource);
         outState.putInt(SAVE_RESOURCE, mResource);
         outState.putInt(SAVE_EMPTY_RESOURCE, mEmptyResource);
         outState.putInt(SAVE_MAX_TASK_COUNT, mMaxTaskCount);

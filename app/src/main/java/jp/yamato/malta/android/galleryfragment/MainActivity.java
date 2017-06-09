@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity
                     (GalleryFragment) getSupportFragmentManager().findFragmentById(R.id.container);
         }
 
+        mFragment.setTopResource(R.layout.simple_recyclerview_debug);
         mFragment.setEmptyResource(R.mipmap.ic_launcher_round);
         mFragment.setMaxTaskCount(128);
         mFragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_HORIZONTAL, 0);

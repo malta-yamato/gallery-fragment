@@ -59,6 +59,10 @@ public class GalleryDialogFragment extends DialogFragment {
         return mDelegate.getAdapterDataItem(position);
     }
 
+    public void setTopResource(int topResource) {
+        mDelegate.setTopResource(topResource);
+    }
+
     public void setResource(int resource) {
         mDelegate.setResource(resource);
     }

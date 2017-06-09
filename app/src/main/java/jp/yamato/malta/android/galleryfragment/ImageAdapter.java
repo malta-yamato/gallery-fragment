@@ -357,6 +357,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             }
 
             imageView = (ImageView) itemView.findViewById(R.id.image);
+            if (imageView == null) {
+                throw new IllegalArgumentException("cannot find image view");
+            }
 
             int length = imageTags.length + exifTags.length;
 
