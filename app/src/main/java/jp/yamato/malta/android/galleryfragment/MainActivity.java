@@ -218,9 +218,60 @@ public class MainActivity extends AppCompatActivity
             cursor.close();
         }
 
-        CustomGalleryDialogFragment fragment = CustomGalleryDialogFragment
-                .newInstance(R.layout.simple_selectable_image_item, 2, data);
+        CustomBottomSheetGalleryDialogFragment fragment = CustomBottomSheetGalleryDialogFragment
+                .newInstance(R.layout.simple_selectable_image_container);
+        fragment.setAdapterData(data);
+        fragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_HORIZONTAL, 0);
         fragment.show(getSupportFragmentManager(), "dialog");
+    }
+
+    //
+    // Custom
+    //
+    public static class CustomBottomSheetGalleryDialogFragment
+            extends BottomSheetGalleryDialogFragment
+            implements ImageAdapter.LoadTask.BitmapLoader, FormatterPickable {
+
+        public static CustomBottomSheetGalleryDialogFragment newInstance(int resource) {
+            CustomBottomSheetGalleryDialogFragment instance =
+                    new CustomBottomSheetGalleryDialogFragment();
+            GalleryFragmentDelegate.setArguments(instance, resource);
+            return instance;
+        }
+
+        @Override
+        public Bitmap loadBitmap(Uri uri) {
+            long id = Long.valueOf(uri.getLastPathSegment());
+            return MediaStore.Images.Thumbnails.getThumbnail(getContext().getContentResolver(), id,
+                    MediaStore.Images.Thumbnails.MINI_KIND, null);
+        }
+
+        @Override
+        public Map<String, ImageAdapter.Formatter> pickFormatter() {
+            Map<String, ImageAdapter.Formatter> map = new HashMap<>();
+            map.put(ImageAdapter.EXIF_MODEL, new ImageAdapter.Formatter() {
+                @Override
+                public String format(String str) {
+                    if (str != null) {
+                        return "[" + str + "]";
+                    }
+                    return "no data";
+                }
+            });
+            map.put(ImageAdapter.EXIF_DATETIME_ORIGINAL, new ImageAdapter.Formatter() {
+                @Override
+                public String format(String str) {
+                    if (str != null) {
+                        String[] parts = str.split("\\s+");
+                        if (parts.length > 0) {
+                            return parts[0].replace(':', '/');
+                        }
+                    }
+                    return "no data";
+                }
+            });
+            return map;
+        }
     }
 
     //

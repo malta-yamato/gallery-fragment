@@ -13,17 +13,6 @@
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
         android:paddingTop="2dp"
-        android:tag="image_display_name"
-        android:text="Title"
-        tools:ignore="HardcodedText"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingBottom="2dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="2dp"
         android:tag="exif_model"
         android:text="Title"
         tools:ignore="HardcodedText"/>
@@ -39,23 +28,12 @@
         android:text="Title"
         tools:ignore="HardcodedText"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingBottom="2dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="2dp"
-        android:tag="image_date_taken"
-        android:text="Title"
-        tools:ignore="HardcodedText"/>
-
     <ImageView
         android:id="@+id/image"
-        android:layout_width="128dp"
-        android:layout_height="128dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:contentDescription="None"
         android:padding="8dp"
-        android:scaleType="centerCrop"
+        android:scaleType="fitCenter"
         tools:ignore="HardcodedText"/>
 </LinearLayout>
