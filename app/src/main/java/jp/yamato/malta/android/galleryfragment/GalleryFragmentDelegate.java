@@ -72,7 +72,8 @@ public class GalleryFragmentDelegate {
 
     public static void setArguments(Fragment instance, int resource) {
         Bundle args = new Bundle();
-        args.putInt(ARG_TOP_RESOURCE, R.layout.simple_recyclerview);
+        args.putInt(ARG_TOP_RESOURCE,
+                R.layout.jp_yamato_malta_gallery_fragment_simple_recyclerview);
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
@@ -83,7 +84,8 @@ public class GalleryFragmentDelegate {
 
     public static void setArguments(Fragment instance, int resource, int spanCount) {
         Bundle args = new Bundle();
-        args.putInt(ARG_TOP_RESOURCE, R.layout.simple_recyclerview);
+        args.putInt(ARG_TOP_RESOURCE,
+                R.layout.jp_yamato_malta_gallery_fragment_simple_recyclerview);
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
@@ -95,7 +97,8 @@ public class GalleryFragmentDelegate {
     public static void setArguments(Fragment instance, int resource, int spanCount,
             ArrayList<Uri> data) {
         Bundle args = new Bundle();
-        args.putInt(ARG_TOP_RESOURCE, R.layout.simple_recyclerview);
+        args.putInt(ARG_TOP_RESOURCE,
+                R.layout.jp_yamato_malta_gallery_fragment_simple_recyclerview);
         args.putInt(ARG_RESOURCE, resource);
         args.putInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
         args.putInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);

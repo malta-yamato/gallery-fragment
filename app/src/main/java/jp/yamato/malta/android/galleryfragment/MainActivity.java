@@ -167,16 +167,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private int mLayoutIndex = 0;
-    private int[] mLayoutResources = new int[]{R.layout.simple_selectable_image_container,
-            R.layout.simple_selectable_image_container_debug,
-            R.layout.simple_selectable_image_container_debug_2,
-            R.layout.simple_selectable_image_container_debug_3,
+    private int mResourceIndex = 0;
+    private int[] mResources = new int[]{R.layout.simple_selectable_image_container,
             R.layout.simple_selectable_image_item};
 
     public void onChangeResourceButtonClick(View view) {
-        mFragment.setResource(mLayoutResources[mLayoutIndex]);
-        mLayoutIndex = (mLayoutIndex + 1) % mLayoutResources.length;
+        mFragment.setResource(mResources[mResourceIndex]);
+        mResourceIndex = (mResourceIndex + 1) % mResources.length;
     }
 
     private int mCurrentLayoutMode = 0;

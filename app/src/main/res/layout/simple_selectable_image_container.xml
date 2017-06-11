@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="?android:attr/selectableItemBackground"
+    android:foreground="?android:attr/selectableItemBackground"
     android:orientation="vertical">
 
     <TextView
@@ -14,7 +14,18 @@
         android:paddingRight="8dp"
         android:paddingTop="2dp"
         android:tag="exif_model"
-        android:text="Title"
+        android:text="Model"
+        tools:ignore="HardcodedText"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="2dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="2dp"
+        android:tag="image_display_name"
+        android:text="Name"
         tools:ignore="HardcodedText"/>
 
     <TextView
@@ -25,7 +36,7 @@
         android:paddingRight="8dp"
         android:paddingTop="2dp"
         android:tag="exif_datetime_original"
-        android:text="Title"
+        android:text="DateTime"
         tools:ignore="HardcodedText"/>
 
     <ImageView
