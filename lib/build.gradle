@@ -27,13 +27,13 @@ dependencies {
 
 // maven
 apply plugin: 'maven'
-def repo = new File(rootDir, "repository")
+def repo = new File(rootDir, "../AndroidRepos")
 
 uploadArchives {
     repositories {
         mavenDeployer {
             repository url: "file://${repo.absolutePath}"
-            pom.version = '1.0.0'
+            pom.version = '1.0.1'
             pom.groupId = 'jp.yamato.malta.android'
             pom.artifactId = 'gallery-fragment'
         }
