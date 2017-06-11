@@ -1,12 +1,9 @@
 package jp.yamato.malta.android.galleryfragment;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-
-import java.util.ArrayList;
 
 /**
  * Created by Malta on 2017/05/29.
@@ -32,6 +29,5 @@ public class GalleryFragmentParams {
                 throw new IllegalArgumentException("layout not match");
         }
     }
-
 
 }
