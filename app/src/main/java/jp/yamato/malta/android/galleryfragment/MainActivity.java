@@ -54,7 +54,8 @@ public class MainActivity extends AppCompatActivity
 
         // fragment
         if (savedInstanceState == null) {
-            mFragment = GalleryFragment.newInstance(R.layout.simple_selectable_image_item);
+            mFragment = GalleryFragment.newInstance(
+                    R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_item);
             getSupportFragmentManager().beginTransaction().replace(R.id.container, mFragment)
                     .commit();
         } else {
@@ -168,8 +169,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private int mResourceIndex = 0;
-    private int[] mResources = new int[]{R.layout.simple_selectable_image_container,
-            R.layout.simple_selectable_image_item};
+    private int[] mResources =
+            new int[]{R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_container,
+                    R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_item};
 
     public void onChangeResourceButtonClick(View view) {
         mFragment.setResource(mResources[mResourceIndex]);
@@ -215,8 +217,10 @@ public class MainActivity extends AppCompatActivity
             cursor.close();
         }
 
-        CustomBottomSheetGalleryDialogFragment fragment = CustomBottomSheetGalleryDialogFragment
-                .newInstance(R.layout.simple_selectable_image_container);
+        CustomBottomSheetGalleryDialogFragment fragment =
+                new CustomBottomSheetGalleryDialogFragment();
+        fragment.setResource(
+                R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_container);
         fragment.setAdapterData(data);
         fragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_HORIZONTAL, 0);
         fragment.show(getSupportFragmentManager(), "dialog");

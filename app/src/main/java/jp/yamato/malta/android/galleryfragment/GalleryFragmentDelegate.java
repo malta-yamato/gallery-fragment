@@ -50,12 +50,12 @@ public class GalleryFragmentDelegate {
     private FormatterPickable mFormatterPickable;
 
     // state
-    private int mTopResource;
-    private int mResource;
-    private int mEmptyResource;
-    private int mMaxTaskCount;
-    private int mLayout;
-    private int mSpanCount;
+    private int mTopResource = R.layout.jp_yamato_malta_gallery_fragment_simple_recyclerview;
+    private int mResource = R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_item;
+    private int mEmptyResource = android.R.drawable.alert_light_frame;
+    private int mMaxTaskCount = ImageAdapter.LoadTask.MAX_TASK_COUNT;
+    private int mLayout = GalleryFragmentParams.GRID_LAYOUT;
+    private int mSpanCount = 2;
 
     private boolean mIsTopResourceFieldAvailable = false;
     private boolean mIsResourceFieldAvailable = false;
