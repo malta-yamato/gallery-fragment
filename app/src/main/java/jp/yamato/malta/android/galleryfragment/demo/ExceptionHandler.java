@@ -1,4 +1,4 @@
-package jp.yamato.malta.android.galleryfragment;
+package jp.yamato.malta.android.galleryfragment.demo;
 
 /**
  * Created by malta on 2017/05/06.

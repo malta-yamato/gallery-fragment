@@ -1,4 +1,4 @@
-package jp.yamato.malta.android.galleryfragment;
+package jp.yamato.malta.android.galleryfragment.demo;
 
 import org.junit.Test;
 

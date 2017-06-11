@@ -1,4 +1,4 @@
-package jp.yamato.malta.android.galleryfragment;
+package jp.yamato.malta.android.galleryfragment.demo;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("jp.yamato.malta.android.galleryfragment", appContext.getPackageName());
+        assertEquals("jp.yamato.malta.android.galleryfragment.demo", appContext.getPackageName());
     }
 }

@@ -1,4 +1,4 @@
-package jp.yamato.malta.android.galleryfragment;
+package jp.yamato.malta.android.galleryfragment.demo;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -31,6 +31,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.support.media.ExifInterface;
+
+import jp.yamato.malta.android.galleryfragment.BottomSheetGalleryDialogFragment;
+import jp.yamato.malta.android.galleryfragment.FormatterPickable;
+import jp.yamato.malta.android.galleryfragment.GalleryFragment;
+import jp.yamato.malta.android.galleryfragment.GalleryFragmentDelegate;
+import jp.yamato.malta.android.galleryfragment.GalleryFragmentParams;
+import jp.yamato.malta.android.galleryfragment.ImageAdapter;
 
 public class MainActivity extends AppCompatActivity
         implements ExceptionHandler.Callback, ImageAdapter.LoadTask.BitmapLoader,
