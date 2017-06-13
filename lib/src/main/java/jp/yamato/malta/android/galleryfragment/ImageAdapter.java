@@ -87,7 +87,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private int mResource;
     private int mEmptyResource = 0;
     private ArrayList<Uri> mAdapterData;
-    private OnItemClickListener mListener;
+    private OnItemClickListener mOnItemClickListener;
+    private OnItemLongClickListener mOnItemLongClickListener;
 
     private final BitmapCache<Integer> mBitmaps = new BitmapCache<>();
     private final SparseArray<Integer> mBitmapOrientationMap = new SparseArray<>();
@@ -108,11 +109,13 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     //
 
     public ImageAdapter(Context context, int resource, ArrayList<Uri> data,
-            OnItemClickListener listener) {
+            OnItemClickListener onItemClickListener,
+            OnItemLongClickListener onItemLongClickListener) {
         mContext = context;
         mResource = resource;
         mAdapterData = data;
-        mListener = listener;
+        mOnItemClickListener = onItemClickListener;
+        mOnItemLongClickListener = onItemLongClickListener;
     }
 
     public void setEmptyResource(int emptyResource) {
@@ -164,13 +167,23 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         }
         final ViewHolder holder = new ViewHolder(view, mImageTags, mExifTags);
 
-        // item click mListener
+        // item click mOnItemClickListener
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mListener != null) {
-                    mListener.onItemClick(v, ImageAdapter.this, holder.getAdapterPosition());
+                if (mOnItemClickListener != null) {
+                    mOnItemClickListener
+                            .onItemClick(v, ImageAdapter.this, holder.getAdapterPosition());
                 }
+            }
+        });
+
+        // item click mOnItemClickListener
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return mOnItemLongClickListener != null && mOnItemLongClickListener
+                        .onItemLongClick(v, ImageAdapter.this, holder.getAdapterPosition());
             }
         });
 
@@ -346,6 +359,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     public interface OnItemClickListener {
         void onItemClick(View view, ImageAdapter adapter, int position);
+    }
+
+    public interface OnItemLongClickListener {
+        boolean onItemLongClick(View view, ImageAdapter adapter, int position);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder implements TaggingTask.TaggedObject {

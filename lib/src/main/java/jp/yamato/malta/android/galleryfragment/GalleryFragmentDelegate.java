@@ -58,8 +58,9 @@ public class GalleryFragmentDelegate {
     private ImageAdapter mAdapter;
 
     private ImageAdapter.LoadTask.BitmapLoader mBitmapLoader;
-    private ImageAdapter.OnItemClickListener mOnItemClickListener;
     private FormatterPickable mFormatterPickable;
+    private ImageAdapter.OnItemClickListener mOnItemClickListener;
+    private ImageAdapter.OnItemLongClickListener mOnItemLongClickListener;
 
     // state
     private int mTopResource = R.layout.jp_yamato_malta_gallery_fragment_simple_recyclerview;
@@ -173,7 +174,8 @@ public class GalleryFragmentDelegate {
 
         mAdapter.destroy();
 
-        mAdapter = new ImageAdapter(mContext, mResource, data, mOnItemClickListener);
+        mAdapter = new ImageAdapter(mContext, mResource, data, mOnItemClickListener,
+                mOnItemLongClickListener);
         setAdapter();
         mRecyclerView.scrollToPosition(position);
     }
@@ -236,6 +238,14 @@ public class GalleryFragmentDelegate {
         } else if (context instanceof ImageAdapter.OnItemClickListener) {
             mOnItemClickListener = (ImageAdapter.OnItemClickListener) context;
         }
+
+        // OnItemLongClickListener
+        if (fragment instanceof ImageAdapter.OnItemLongClickListener) {
+            mOnItemLongClickListener = (ImageAdapter.OnItemLongClickListener) fragment;
+        } else if (context instanceof ImageAdapter.OnItemLongClickListener) {
+            mOnItemLongClickListener = (ImageAdapter.OnItemLongClickListener) context;
+        }
+
     }
 
     public void onDetach() {
@@ -298,9 +308,10 @@ public class GalleryFragmentDelegate {
         // set adapter
         if (data != null) {
             mAdapter = new ImageAdapter(mContext, mResource, toUriArrayList(data),
-                    mOnItemClickListener);
+                    mOnItemClickListener, mOnItemLongClickListener);
         } else {
-            mAdapter = new ImageAdapter(mContext, mResource, null, mOnItemClickListener);
+            mAdapter = new ImageAdapter(mContext, mResource, null, mOnItemClickListener,
+                    mOnItemLongClickListener);
         }
 
         setAdapter();

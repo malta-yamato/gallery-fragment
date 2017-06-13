@@ -57,7 +57,8 @@ import jp.yamato.malta.android.galleryfragment.ImageAdapter;
 
 public class MainActivity extends AppCompatActivity
         implements ExceptionHandler.Callback, ImageAdapter.LoadTask.BitmapLoader,
-        ImageAdapter.OnItemClickListener, FormatterPickable, LoaderManager.LoaderCallbacks<Cursor> {
+        ImageAdapter.OnItemClickListener, ImageAdapter.OnItemLongClickListener, FormatterPickable,
+        LoaderManager.LoaderCallbacks<Cursor> {
     @SuppressWarnings("unused")
     private static final String TAG = "MainActivity";
 
@@ -189,6 +190,13 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+    }
+
+    @Override
+    public boolean onItemLongClick(View view, ImageAdapter adapter, int position) {
+        Toast.makeText(this, adapter.getAdapterDataItem(position).getLastPathSegment(),
+                Toast.LENGTH_SHORT).show();
+        return true;
     }
 
     private int mResourceIndex = 0;
