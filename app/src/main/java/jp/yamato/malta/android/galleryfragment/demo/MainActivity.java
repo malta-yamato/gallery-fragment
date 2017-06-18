@@ -18,6 +18,7 @@ package jp.yamato.malta.android.galleryfragment.demo;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -125,7 +126,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public Bitmap loadBitmap(Uri uri) {
+    public Bitmap loadBitmap(ContentResolver resolver, Uri uri) {
         long id = Long.valueOf(uri.getLastPathSegment());
         return MediaStore.Images.Thumbnails
                 .getThumbnail(getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND,
@@ -272,7 +273,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        public Bitmap loadBitmap(Uri uri) {
+        public Bitmap loadBitmap(ContentResolver resolver, Uri uri) {
             long id = Long.valueOf(uri.getLastPathSegment());
             return MediaStore.Images.Thumbnails.getThumbnail(getContext().getContentResolver(), id,
                     MediaStore.Images.Thumbnails.MINI_KIND, null);

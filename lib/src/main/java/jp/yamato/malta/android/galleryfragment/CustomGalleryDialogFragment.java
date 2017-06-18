@@ -17,6 +17,7 @@
 package jp.yamato.malta.android.galleryfragment;
 
 import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -48,7 +49,7 @@ public class CustomGalleryDialogFragment extends GalleryDialogFragment
     }
 
     @Override
-    public Bitmap loadBitmap(Uri uri) {
+    public Bitmap loadBitmap(ContentResolver resolver, Uri uri) {
         long id = Long.valueOf(uri.getLastPathSegment());
         return MediaStore.Images.Thumbnails.getThumbnail(getContext().getContentResolver(), id,
                 MediaStore.Images.Thumbnails.MICRO_KIND, null);

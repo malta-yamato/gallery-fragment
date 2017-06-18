@@ -503,7 +503,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             // get bitmap
             Bitmap bitmap;
             if (bitmapLoader != null) {
-                bitmap = bitmapLoader.loadBitmap(uri);
+                bitmap = bitmapLoader.loadBitmap(resolver, uri);
             } else {
                 throw new IllegalStateException("need bitmap loader");
             }
@@ -634,7 +634,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         }
 
         public interface BitmapLoader {
-            Bitmap loadBitmap(Uri uri);
+            Bitmap loadBitmap(ContentResolver resolver, Uri uri);
         }
 
         public static class Result extends TaggingTask.Result {
