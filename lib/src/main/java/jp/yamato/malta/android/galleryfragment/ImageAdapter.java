@@ -33,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -40,11 +41,17 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
     @SuppressWarnings("unused")
     private static final String TAG = "ImageAdapter";
+
+    // file
+    public static final String FILE_NAME = "file_name";
+    public static final String FILE_PATH = "file_path";
+    public static final String FILE_SIZE = "file_size";
 
     // media provider
     public static final String IMAGE_DATA = "image_data";
@@ -94,10 +101,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private final SparseArray<Integer> mBitmapOrientationMap = new SparseArray<>();
 
     private boolean mIsInfoSetup;
-    private String[] mExifTags;
+    private String[] mFileTags;
     private String[] mImageTags;
-    private final SparseArray<String[]> mExifInfoMap = new SparseArray<>();
+    private String[] mExifTags;
+    private final SparseArray<String[]> mFileInfoMap = new SparseArray<>();
     private final SparseArray<String[]> mImageInfoMap = new SparseArray<>();
+    private final SparseArray<String[]> mExifInfoMap = new SparseArray<>();
 
     private int mMaxTaskCount = LoadTask.MAX_TASK_COUNT;
     private LoadTask.BitmapLoader mBitmapLoader = null;
@@ -165,7 +174,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             setupInfo(view);
             mIsInfoSetup = true;
         }
-        final ViewHolder holder = new ViewHolder(view, mImageTags, mExifTags);
+        final ViewHolder holder = new ViewHolder(view, mFileTags, mImageTags, mExifTags);
 
         // item click mOnItemClickListener
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -191,6 +200,15 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     }
 
     private void setupInfo(View view) {
+
+        //
+        // File Tags
+        //
+        ArrayList<String> fileTagList = new ArrayList<>();
+        addTagListWithViewTag(fileTagList, view, FILE_NAME);
+        addTagListWithViewTag(fileTagList, view, FILE_PATH);
+        addTagListWithViewTag(fileTagList, view, FILE_SIZE);
+        mFileTags = fileTagList.toArray(new String[fileTagList.size()]);
 
         //
         // Image Tags
@@ -256,14 +274,16 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 imageView.setImageResource(android.R.drawable.alert_light_frame);
             }
 
+            holder.setFileTextNull();
             holder.setImageTextNull();
             holder.setExifTextNull();
 
+            boolean loadFileInfo = mFileInfoMap.get(position) == null;
             boolean loadImageInfo = mImageInfoMap.get(position) == null;
             boolean loadExifInfo = mExifInfoMap.get(position) == null;
 
             LoadTask task = new LoadTask(mContext.getContentResolver(), uri, position, holder,
-                    mBitmapOrientationMap.get(position), mImageTags, mExifTags,
+                    mBitmapOrientationMap.get(position), mFileTags, mImageTags, mExifTags,
                     new TaggingTask.OnApplyListener<Integer>() {
                         @Override
                         public TaggingTask.Result OnPostResult(Integer key,
@@ -275,6 +295,16 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                                 if (result.orientation != null) {
                                     mBitmapOrientationMap.put(key, result.orientation);
                                 }
+                                if (result.fileInfo != null) {
+                                    String[] fileInfo = result.fileInfo;
+                                    for (int i = 0; i < fileInfo.length; i++) {
+                                        Formatter formatter = mFormatter.get(mFileTags[i]);
+                                        if (formatter != null) {
+                                            fileInfo[i] = formatter.format(fileInfo[i]);
+                                        }
+                                    }
+                                    mFileInfoMap.put(key, fileInfo);
+                                }
                                 if (result.imageInfo != null) {
                                     String[] imageInfo = result.imageInfo;
                                     for (int i = 0; i < imageInfo.length; i++) {
@@ -283,7 +313,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                                             imageInfo[i] = formatter.format(imageInfo[i]);
                                         }
                                     }
-                                    mImageInfoMap.put(key, result.imageInfo);
+                                    mImageInfoMap.put(key, imageInfo);
                                 }
                                 if (result.exifInfo != null) {
                                     String[] exifInfo = result.exifInfo;
@@ -293,7 +323,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                                             exifInfo[i] = formatter.format(exifInfo[i]);
                                         }
                                     }
-                                    mExifInfoMap.put(key, result.exifInfo);
+                                    mExifInfoMap.put(key, exifInfo);
                                 }
                             }
                             return null;
@@ -305,6 +335,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                             LoadTask.Result result = (LoadTask.Result) result0;
                             ViewHolder holder = (ViewHolder) taggedObject;
                             holder.imageView.setImageBitmap(result.bitmap);
+                            //
+                            String[] fileInfo = result.fileInfo;
+                            if (fileInfo == null) {
+                                fileInfo = mFileInfoMap.get(key);
+                            }
+                            holder.setFileText(fileInfo);
                             //
                             String[] imageInfo = result.imageInfo;
                             if (imageInfo == null) {
@@ -321,16 +357,19 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                     });
 
             task.setBitmapLoader(mBitmapLoader);
-            task.execute(loadImageInfo, loadExifInfo);
+            task.execute(loadFileInfo, loadImageInfo, loadExifInfo);
 
         } else {
             imageView.setImageBitmap(bitmap);
 
-            String[] exifInfo = mExifInfoMap.get(position);
-            holder.setExifText(exifInfo);
+            String[] fileInfo = mFileInfoMap.get(position);
+            holder.setFileText(fileInfo);
 
             String[] imageInfo = mImageInfoMap.get(position);
             holder.setImageText(imageInfo);
+
+            String[] exifInfo = mExifInfoMap.get(position);
+            holder.setExifText(exifInfo);
 
         }
 
@@ -348,6 +387,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     public void clearCache() {
         mBitmaps.evictAll();
         mBitmapOrientationMap.clear();
+        mFileInfoMap.clear();
         mImageInfoMap.clear();
         mExifInfoMap.clear();
     }
@@ -370,6 +410,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         ImageView imageView;
         TextView[] textViews;
 
+        int fileFromIndex;
+        int fileToIndex;
         int imageFromIndex;
         int imageToIndex;
         int exifFromIndex;
@@ -377,7 +419,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
         Object tag;
 
-        public ViewHolder(View itemView, String[] imageTags, String[] exifTags) {
+        public ViewHolder(View itemView, String[] fileTags, String[] imageTags, String[] exifTags) {
             super(itemView);
             if (itemView instanceof ImageView) {
                 imageView = (ImageView) itemView;
@@ -389,19 +431,40 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 throw new IllegalArgumentException("cannot find image view");
             }
 
-            int length = imageTags.length + exifTags.length;
+            int length = fileTags.length + imageTags.length + exifTags.length;
 
-            imageFromIndex = 0;
-            imageToIndex = imageTags.length;
-            exifFromIndex = imageTags.length;
-            exifToIndex = imageTags.length + exifTags.length;
+            fileFromIndex = 0;
+            fileToIndex = fileTags.length;
+            imageFromIndex = fileTags.length;
+            imageToIndex = fileTags.length + imageTags.length;
+            exifFromIndex = fileTags.length + imageTags.length;
+            exifToIndex = fileTags.length + imageTags.length + exifTags.length;
 
             textViews = new TextView[length];
+            for (int i = fileFromIndex; i < fileToIndex; i++) {
+                textViews[i] = (TextView) itemView.findViewWithTag(fileTags[i - fileFromIndex]);
+            }
             for (int i = imageFromIndex; i < imageToIndex; i++) {
                 textViews[i] = (TextView) itemView.findViewWithTag(imageTags[i - imageFromIndex]);
             }
             for (int i = exifFromIndex; i < exifToIndex; i++) {
                 textViews[i] = (TextView) itemView.findViewWithTag(exifTags[i - exifFromIndex]);
+            }
+        }
+
+        public void setFileText(String[] fileInfo) {
+            if (fileInfo == null) {
+                return;
+            }
+
+            for (int i = fileFromIndex; i < fileToIndex; i++) {
+                textViews[i].setText(fileInfo[i - fileFromIndex]);
+            }
+        }
+
+        public void setFileTextNull() {
+            for (int i = fileFromIndex; i < fileToIndex; i++) {
+                textViews[i].setText("");
             }
         }
 
@@ -464,19 +527,21 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         private ContentResolver resolver;
         private Uri uri;
         private Integer bitmapOrientation;
+        private String[] fileTags;
         private String[] imageTags;
         private String[] exifTags;
 
         private BitmapLoader bitmapLoader = null;
 
         private LoadTask(ContentResolver resolver, Uri uri, Integer key, TaggedObject holder,
-                Integer bitmapOrientation, String[] imageTags, String[] exifTags,
+                Integer bitmapOrientation, String[] fileTags, String[] imageTags, String[] exifTags,
                 OnApplyListener<Integer> listener) {
             super(key, holder, listener);
 
             this.resolver = resolver;
             this.uri = uri;
             this.bitmapOrientation = bitmapOrientation;
+            this.fileTags = fileTags;
             this.imageTags = imageTags;
             this.exifTags = exifTags;
 
@@ -497,8 +562,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 return null;
             }
 
-            final boolean loadImageInfo = flag[0];
-            final boolean loadExifInfo = flag[1];
+            final boolean loadFileInfo = flag[0];
+            final boolean loadImageInfo = flag[1];
+            final boolean loadExifInfo = flag[2];
 
             // get bitmap
             Bitmap bitmap;
@@ -508,7 +574,56 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 throw new IllegalStateException("need bitmap loader");
             }
             if (bitmap == null) {
-                return new Result(false, null, null, null, null);
+                return new Result(false, null, null, null, null, null);
+            }
+
+            // file properties
+            String[] fileInfo = null;
+            if (loadFileInfo && fileTags.length > 0) {
+//                Log.d(TAG, "file properties");
+                fileInfo = new String[fileTags.length];
+
+                String path = null;
+                String scheme = uri.getScheme();
+                if (scheme != null) {
+                    scheme = scheme.trim().toLowerCase(Locale.ENGLISH);
+                }
+                if ("file".equals(scheme)) {
+                    path = uri.getPath();
+                } else if ("content".equals(scheme)) {
+                    Cursor cursor =
+                            resolver.query(uri, new String[]{MediaStore.Images.Media.DATA}, null,
+                                    null, null);
+                    if (cursor != null && cursor.getCount() > 0) {
+                        cursor.moveToFirst();
+                        path = cursor.getString(
+                                cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                        cursor.close();
+                    }
+                }
+
+                if (path != null) {
+                    File file = new File(path);
+                    for (int i = 0; i < fileInfo.length; i++) {
+                        switch (fileTags[i]) {
+                            case FILE_NAME:
+                                fileInfo[i] = file.getName();
+                                break;
+                            case FILE_PATH:
+                                fileInfo[i] = file.getPath();
+                                break;
+                            case FILE_SIZE:
+                                fileInfo[i] = String.valueOf(file.length());
+                                break;
+                            default:
+                                fileInfo[i] = "no data";
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < fileInfo.length; i++) {
+                        fileInfo[i] = "error";
+                    }
+                }
             }
 
             // read provider
@@ -616,7 +731,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 }
             }
 
-            return new Result(true, newBitmap, orientation, imageInfo, exifInfo);
+            return new Result(true, newBitmap, orientation, fileInfo, imageInfo, exifInfo);
         }
 
         @Override
@@ -640,14 +755,16 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         public static class Result extends TaggingTask.Result {
             public Bitmap bitmap;
             public Integer orientation;
+            public String[] fileInfo;
             public String[] imageInfo;
             public String[] exifInfo;
 
             public Result(boolean isSuccessful, Bitmap bitmap, Integer orientation,
-                    String[] imageInfo, String[] exifInfo) {
+                    String[] fileInfo, String[] imageInfo, String[] exifInfo) {
                 this.isSuccessful = isSuccessful;
                 this.bitmap = bitmap;
                 this.orientation = orientation;
+                this.fileInfo = fileInfo;
                 this.imageInfo = imageInfo;
                 this.exifInfo = exifInfo;
             }

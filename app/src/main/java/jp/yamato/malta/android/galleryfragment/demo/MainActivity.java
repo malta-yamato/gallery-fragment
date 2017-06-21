@@ -57,7 +57,6 @@ import android.support.media.ExifInterface;
 import jp.yamato.malta.android.galleryfragment.BottomSheetGalleryDialogFragment;
 import jp.yamato.malta.android.galleryfragment.FormatterPickable;
 import jp.yamato.malta.android.galleryfragment.GalleryFragment;
-import jp.yamato.malta.android.galleryfragment.GalleryFragmentDelegate;
 import jp.yamato.malta.android.galleryfragment.GalleryFragmentParams;
 import jp.yamato.malta.android.galleryfragment.ImageAdapter;
 
@@ -289,6 +288,15 @@ public class MainActivity extends AppCompatActivity
         @Override
         public Map<String, ImageAdapter.Formatter> pickFormatter() {
             Map<String, ImageAdapter.Formatter> map = new HashMap<>();
+            map.put(ImageAdapter.FILE_NAME, new ImageAdapter.Formatter() {
+                @Override
+                public String format(String str) {
+                    if (str != null) {
+                        return "[" + str + "]";
+                    }
+                    return "no data";
+                }
+            });
             map.put(ImageAdapter.EXIF_MODEL, new ImageAdapter.Formatter() {
                 @Override
                 public String format(String str) {
@@ -304,7 +312,7 @@ public class MainActivity extends AppCompatActivity
                     if (str != null) {
                         String[] parts = str.split("\\s+");
                         if (parts.length > 0) {
-                            return parts[0].replace(':', '/');
+                            return "[" + parts[0].replace(':', '/') + "]";
                         }
                     }
                     return "no data";

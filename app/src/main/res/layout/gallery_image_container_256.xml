@@ -24,7 +24,7 @@
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
         android:paddingTop="2dp"
-        android:tag="image_display_name"
+        android:tag="file_name"
         android:text="Name"
         tools:ignore="HardcodedText"/>
 
