@@ -19,9 +19,12 @@ package jp.yamato.malta.android.galleryfragment.demo;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,9 +35,11 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -80,7 +85,7 @@ public class MainActivity extends AppCompatActivity
         // fragment
         if (savedInstanceState == null) {
             mFragment = GalleryFragment.newInstance(
-                    R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_item);
+                    R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_container);
             getSupportFragmentManager().beginTransaction().replace(R.id.container, mFragment)
                     .commit();
         } else {
@@ -131,6 +136,9 @@ public class MainActivity extends AppCompatActivity
         return MediaStore.Images.Thumbnails
                 .getThumbnail(getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND,
                         null);
+
+//        int requestSquareSize = getResources().getDimensionPixelSize(R.dimen.size_128dp);
+//        return createBitmapByDecodedStream(resolver, uri, requestSquareSize, requestSquareSize, 0);
     }
 
     @Override
@@ -194,10 +202,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onItemLongClick(View view, ImageAdapter adapter, int position) {
-        Toast.makeText(this, adapter.getAdapterDataItem(position).getLastPathSegment(),
-                Toast.LENGTH_SHORT).show();
-        return true;
+    public boolean onItemLongClick(View view, ImageAdapter imageAdapter, int position) {
+        Uri uri = imageAdapter.getAdapterDataItem(position);
+        if (uri != null) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, "image/*");
+            startActivity(intent);
+            return true;
+        }
+        return false;
     }
 
     private int mResourceIndex = 0;
@@ -234,26 +247,27 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onDialogButtonClick(View view) {
-        ArrayList<Uri> data = new ArrayList<>();
+        ArrayList<Uri> list = new ArrayList<>();
+
         Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Images.Media._ID}, null, null,
+                new String[]{MediaStore.Images.Media.DATA}, null, null,
                 MediaStore.Images.Media.DATE_TAKEN + " DESC");
-        if (cursor != null) {
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.moveToPosition(i);
-                long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID));
-                Uri uri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        String.valueOf(id));
-                data.add(uri);
-            }
-            cursor.close();
+        if (cursor == null) {
+            return;
         }
+
+        for (int i = 0; i < 10; i++) {
+            if (cursor.moveToNext()) {
+                String data = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                list.add(Uri.fromFile(new File(data)));
+            }
+        }
+        cursor.close();
 
         CustomBottomSheetGalleryDialogFragment fragment =
                 new CustomBottomSheetGalleryDialogFragment();
-        fragment.setResource(
-                R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_container);
-        fragment.setAdapterData(data);
+        fragment.setResource(R.layout.gallery_image_container_256);
+        fragment.setAdapterData(list);
         fragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_HORIZONTAL, 0);
         fragment.show(getSupportFragmentManager(), "dialog");
     }
@@ -265,18 +279,11 @@ public class MainActivity extends AppCompatActivity
             extends BottomSheetGalleryDialogFragment
             implements ImageAdapter.LoadTask.BitmapLoader, FormatterPickable {
 
-        public static CustomBottomSheetGalleryDialogFragment newInstance(int resource) {
-            CustomBottomSheetGalleryDialogFragment instance =
-                    new CustomBottomSheetGalleryDialogFragment();
-            GalleryFragmentDelegate.setArguments(instance, resource);
-            return instance;
-        }
-
         @Override
         public Bitmap loadBitmap(ContentResolver resolver, Uri uri) {
-            long id = Long.valueOf(uri.getLastPathSegment());
-            return MediaStore.Images.Thumbnails.getThumbnail(getContext().getContentResolver(), id,
-                    MediaStore.Images.Thumbnails.MINI_KIND, null);
+            int requestSquareSize = getResources().getDimensionPixelSize(R.dimen.size_256dp);
+            return createBitmapByDecodedStream(resolver, uri, requestSquareSize, requestSquareSize,
+                    0);
         }
 
         @Override
@@ -305,6 +312,153 @@ public class MainActivity extends AppCompatActivity
             });
             return map;
         }
+    }
+
+    private static final int IMAGE_BUF_SIZE = 8 * 1048576;
+
+    private static Bitmap createBitmapByDecodedStream(ContentResolver resolver, Uri uri,
+            int destWidth, int destHeight, int mode) {
+        Bitmap bitmap = null;
+        BufferedInputStream stream = null;
+        try {
+            // create buffered stream
+            InputStream in = resolver.openInputStream(uri);
+            if (in == null) {
+                return null;
+            }
+            stream = new BufferedInputStream(in, IMAGE_BUF_SIZE);
+
+            // check size
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(stream, null, options);
+            stream.close();
+            int orgWidth = options.outWidth;
+            int orgHeight = options.outHeight;
+            Log.v(TAG, "Original Image Size: " + orgWidth + " x " + orgHeight);
+
+            // resolve inSampleSize
+            int widthRatio;
+            int heightRatio;
+            int inSampleSize;
+            if (mode == 0) {
+//                widthRatio = (int) ((float) orgWidth / (float) destWidth);
+//                heightRatio = (int) ((float) orgHeight / (float) destHeight);
+//                inSampleSize = Math.min(widthRatio, heightRatio);
+
+                inSampleSize =
+                        getLeastRegulatedSampleSize(orgWidth, orgHeight, destWidth, destHeight);
+
+                Log.v(TAG, "inSampleSize: " + inSampleSize);
+            } else {
+                inSampleSize =
+                        getMostRegulatedSampleSize(orgWidth, orgHeight, destWidth, destHeight);
+                Log.v(TAG, "inSampleSize: " + inSampleSize);
+            }
+            // create buffered stream
+            in = resolver.openInputStream(uri);
+            if (in == null) {
+                return null;
+            }
+            stream = new BufferedInputStream(in, IMAGE_BUF_SIZE);
+
+            // load bitmap
+            options = new BitmapFactory.Options();
+            options.inSampleSize = inSampleSize;
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            Bitmap decodedBitmap = BitmapFactory.decodeStream(stream, null, options);
+            stream.close();
+            int decodedWidth = decodedBitmap.getWidth();
+            int decodedHeight = decodedBitmap.getHeight();
+            Log.v(TAG, "Decoded Image Size: " + decodedWidth + " x " + decodedHeight);
+
+            // clipping
+            int clippingX = (decodedWidth - destWidth) / 2;
+            int clippingY = (decodedHeight - destHeight) / 2;
+            if (clippingX >= 0 && clippingY >= 0) {
+                Log.v(TAG, "!!!---Case A---!!!");
+                bitmap = Bitmap.createBitmap(decodedBitmap, clippingX, clippingY, destWidth,
+                        destHeight);
+                decodedBitmap.recycle();
+            } else if (clippingX < 0 && clippingY < 0) {
+                Log.v(TAG, "!!!---Case B---!!!");
+                int offsetX = -1 * clippingX;
+                int offsetY = -1 * clippingY;
+                Bitmap baseBitmap =
+                        Bitmap.createBitmap(destWidth, destHeight, Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(baseBitmap);
+                canvas.drawBitmap(decodedBitmap, offsetX, offsetY, null);
+                bitmap = baseBitmap;
+                decodedBitmap.recycle();
+            } else if (clippingX < 0) {
+                Log.v(TAG, "!!!---Case C---!!!");
+                int offsetX = -1 * clippingX;
+                Bitmap baseBitmap =
+                        Bitmap.createBitmap(destWidth, destHeight, Bitmap.Config.ARGB_8888);
+                Bitmap clippedBitmap =
+                        Bitmap.createBitmap(decodedBitmap, 0, clippingY, decodedWidth, destHeight);
+                Canvas canvas = new Canvas(baseBitmap);
+                canvas.drawBitmap(clippedBitmap, offsetX, 0, null);
+                bitmap = baseBitmap;
+                decodedBitmap.recycle();
+                clippedBitmap.recycle();
+            } else {
+                Log.v(TAG, "!!!---Case D---!!!");
+                int offsetY = -1 * clippingY;
+                Bitmap baseBitmap =
+                        Bitmap.createBitmap(destWidth, destHeight, Bitmap.Config.ARGB_8888);
+                Bitmap clippedBitmap =
+                        Bitmap.createBitmap(decodedBitmap, clippingX, 0, destWidth, decodedHeight);
+                Canvas canvas = new Canvas(baseBitmap);
+                canvas.drawBitmap(clippedBitmap, 0, offsetY, null);
+                bitmap = baseBitmap;
+                decodedBitmap.recycle();
+                clippedBitmap.recycle();
+            }
+
+            int lastWidth = bitmap.getWidth();
+            int lastHeight = bitmap.getHeight();
+            Log.v(TAG, "Last Image Size: " + lastWidth + " x " + lastHeight);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return bitmap;
+    }
+
+    public static int getMostRegulatedSampleSize(int width, int height, int tgtWidth,
+            int tgtHeight) {
+        int sampleSize;
+        for (sampleSize = 1; sampleSize <= 16; sampleSize++) {
+            if (width % sampleSize == 0 && height % sampleSize == 0) {
+                if (width / sampleSize <= tgtWidth && height / sampleSize <= tgtHeight) {
+                    break;
+                }
+            }
+        }
+        return sampleSize;
+    }
+
+    public static int getLeastRegulatedSampleSize(int width, int height, int tgtWidth,
+            int tgtHeight) {
+        int sampleSize;
+        for (sampleSize = 16; sampleSize >= 1; sampleSize--) {
+            if (width % sampleSize == 0 && height % sampleSize == 0) {
+                if (width / sampleSize >= tgtWidth && height / sampleSize >= tgtHeight) {
+                    break;
+                }
+            }
+        }
+        return sampleSize;
     }
 
     //
