@@ -269,19 +269,23 @@ public class GalleryFragmentDelegate {
         } else {
             if (args != null) {
                 if (!mIsTopResourceFieldAvailable) {
-                    mTopResource = args.getInt(ARG_TOP_RESOURCE);
+                    mTopResource = args.getInt(ARG_TOP_RESOURCE,
+                            R.layout.jp_yamato_malta_gallery_fragment_simple_recyclerview);
                 }
                 if (!mIsResourceFieldAvailable) {
-                    mResource = args.getInt(ARG_RESOURCE);
+                    mResource = args.getInt(ARG_RESOURCE,
+                            R.layout.jp_yamato_malta_gallery_fragment_simple_selectable_image_item);
                 }
                 if (!mIsEmptyResourceFieldAvailable) {
-                    mEmptyResource = args.getInt(ARG_EMPTY_RESOURCE);
+                    mEmptyResource =
+                            args.getInt(ARG_EMPTY_RESOURCE, android.R.drawable.alert_light_frame);
                 }
                 if (!mIsMaxTaskCountAvailable) {
-                    mMaxTaskCount = args.getInt(ARG_MAX_TASK_COUNT);
+                    mMaxTaskCount =
+                            args.getInt(ARG_MAX_TASK_COUNT, ImageAdapter.LoadTask.MAX_TASK_COUNT);
                 }
                 if (!mIsLayoutFieldAvailable) {
-                    mLayout = args.getInt(ARG_LAYOUT);
+                    mLayout = args.getInt(ARG_LAYOUT, GalleryFragmentParams.GRID_LAYOUT);
                 }
                 if (!mIsSpanCountFieldAvailable) {
                     mSpanCount = args.getInt(ARG_SPAN_COUNT, 2);
