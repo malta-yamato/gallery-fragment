@@ -130,6 +130,22 @@ public class GalleryFragmentDelegate {
         });
     }
 
+    public void addToAdapter(final Uri uri) {
+        addToAdapter(uri, false);
+    }
+
+    public void addToAdapter(final Uri uri, final boolean scroll) {
+        mDeferredOperations.offer(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.add(uri);
+                if (scroll) {
+                    mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                }
+            }
+        });
+    }
+
     public ArrayList<Uri> getAdapterData() {
         if (!mDeferredOperations.isReleased()) {
             throw new IllegalStateException("get field is not ready");

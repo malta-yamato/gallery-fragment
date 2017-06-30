@@ -62,6 +62,14 @@ public class GalleryFragment extends Fragment {
         mDelegate.setAdapterData(data);
     }
 
+    public void addToAdapter(Uri uri) {
+        mDelegate.addToAdapter(uri);
+    }
+
+    public void addToAdapter(Uri uri, boolean scroll) {
+        mDelegate.addToAdapter(uri, scroll);
+    }
+
     public ArrayList<Uri> getAdapterData() {
         return mDelegate.getAdapterData();
     }

@@ -142,6 +142,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         notifyDataSetChanged();
     }
 
+    public void add(Uri uri) {
+        mAdapterData.add(uri);
+        notifyItemInserted(mAdapterData.size() - 1);
+    }
+
     public ArrayList<Uri> getAdapterData() {
         return mAdapterData;
     }
