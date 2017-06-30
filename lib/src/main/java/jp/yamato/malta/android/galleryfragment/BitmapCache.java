@@ -79,6 +79,10 @@ public class BitmapCache<K> {
 //        }
     }
 
+    public Bitmap remove(K key) {
+        return mCache.remove(key);
+    }
+
     public void evictAll() {
 //        Log.d(TAG, "evictAll");
         mCache.evictAll();

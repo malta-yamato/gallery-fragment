@@ -397,6 +397,40 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         LoadTask.cancelAll();
     }
 
+    //
+    //
+    //
+
+    private void moveCache(int from, int to) {
+        // bitmap cache
+        Bitmap bitmap = mBitmaps.remove(from);
+        mBitmaps.put(to, bitmap);
+
+        // bitmap orientation map
+        Integer orientation = mBitmapOrientationMap.get(from);
+        mBitmapOrientationMap.delete(from);
+        mBitmapOrientationMap.put(to, orientation);
+
+        // file info map
+        String[] fileInfo = mFileInfoMap.get(from);
+        mFileInfoMap.delete(from);
+        mFileInfoMap.put(to, fileInfo);
+
+        // image info map
+        String[] imageInfo = mImageInfoMap.get(from);
+        mImageInfoMap.delete(from);
+        mImageInfoMap.put(to, imageInfo);
+
+        // exif info map
+        String[] exifInfo = mExifInfoMap.get(from);
+        mExifInfoMap.delete(from);
+        mExifInfoMap.put(to, exifInfo);
+    }
+
+    //
+    // Interface
+    //
+
     public interface OnItemClickListener {
         void onItemClick(View view, ImageAdapter adapter, int position);
     }
@@ -404,6 +438,14 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     public interface OnItemLongClickListener {
         boolean onItemLongClick(View view, ImageAdapter adapter, int position);
     }
+
+    public interface Formatter {
+        String format(String str);
+    }
+
+    //
+    // ViewHolder
+    //
 
     static class ViewHolder extends RecyclerView.ViewHolder implements TaggingTask.TaggedObject {
         // itemView is in super class
@@ -510,6 +552,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             return tag;
         }
     }
+
+    //
+    // LoadTask
+    //
 
     public static class LoadTask extends TaggingTask<Integer, Boolean> {
 
@@ -772,9 +818,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     }
 
-    public interface Formatter {
-        String format(String str);
-    }
+    //
+    //
+    //
 
     @SuppressWarnings("unused")
     private static Bitmap createScaledAndRotatedBitmap(Bitmap src, int dstWidth, int dstHeight,
