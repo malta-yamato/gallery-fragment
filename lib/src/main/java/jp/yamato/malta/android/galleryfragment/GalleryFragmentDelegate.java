@@ -164,7 +164,6 @@ public class GalleryFragmentDelegate {
         }
 
         ArrayList<Uri> data = mAdapter.getAdapterData();
-        Map<String, ImageAdapter.Formatter> formatter = mFormatterPickable.pickFormatter();
 
         int position = 0;
         View child = mRecyclerView.getChildAt(0);
