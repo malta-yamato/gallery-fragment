@@ -147,6 +147,14 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         notifyItemInserted(mAdapterData.size() - 1);
     }
 
+    public void insert(Uri uri, int index) {
+        mAdapterData.add(index, uri);
+        for (int pos = mAdapterData.size() - 1; pos > index; pos--) {
+            moveCache(pos - 1, pos);
+        }
+        notifyItemInserted(index);
+    }
+
     public ArrayList<Uri> getAdapterData() {
         return mAdapterData;
     }

@@ -130,7 +130,7 @@ public class GalleryFragmentDelegate {
         });
     }
 
-    public void addToAdapter(final Uri uri) {
+    public void addToAdapter(Uri uri) {
         addToAdapter(uri, false);
     }
 
@@ -141,6 +141,22 @@ public class GalleryFragmentDelegate {
                 mAdapter.add(uri);
                 if (scroll) {
                     mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                }
+            }
+        });
+    }
+
+    public void insertToAdapter(int index, Uri uri) {
+        insertToAdapter(index, uri, false);
+    }
+
+    public void insertToAdapter(final int index, final Uri uri, final boolean scroll) {
+        mDeferredOperations.offer(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.insert(uri, index);
+                if (scroll) {
+                    mRecyclerView.scrollToPosition(index);
                 }
             }
         });
@@ -226,6 +242,10 @@ public class GalleryFragmentDelegate {
             mRecyclerView.setLayoutManager(
                     GalleryFragmentParams.resolveLayoutManager(mContext, mLayout, mSpanCount));
         }
+    }
+
+    public void notifyDataSetChanged() {
+        mAdapter.notifyDataSetChanged();
     }
 
     public void onAttach(Context context, Fragment fragment) {

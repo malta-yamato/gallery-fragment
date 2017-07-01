@@ -70,6 +70,14 @@ public class GalleryFragment extends Fragment {
         mDelegate.addToAdapter(uri, scroll);
     }
 
+    public void insertToAdapter(int index, Uri uri) {
+        mDelegate.insertToAdapter(index, uri);
+    }
+
+    public void insertToAdapter(int index, Uri uri, boolean scroll) {
+        mDelegate.insertToAdapter(index, uri, scroll);
+    }
+
     public ArrayList<Uri> getAdapterData() {
         return mDelegate.getAdapterData();
     }
@@ -96,6 +104,10 @@ public class GalleryFragment extends Fragment {
 
     public void setLayout(int layout, int spanCount) {
         mDelegate.setLayout(layout, spanCount);
+    }
+
+    public void notifyDataSetChanged() {
+        mDelegate.notifyDataSetChanged();
     }
 
     @Override

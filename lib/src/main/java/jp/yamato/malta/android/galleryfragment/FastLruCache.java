@@ -60,8 +60,12 @@ public class FastLruCache<K, V> {
     }
 
     public final V put(K key, V value) {
-        if (key == null || value == null) {
-            throw new NullPointerException("key == null || value == null");
+        if (value == null) {
+            return null;
+        }
+
+        if (key == null) {
+            throw new NullPointerException("key == null");
         }
 
 //        Log.d(TAG, "put[B]: key=" + key + "; " + debugSizeAndKeySet());
