@@ -155,6 +155,25 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         notifyItemInserted(index);
     }
 
+    public boolean remove(Uri uri) {
+        int index = mAdapterData.indexOf(uri);
+        if (index >= 0) {
+            if (index == mAdapterData.size() - 1) {
+                mAdapterData.remove(index);
+                removeCache(index);
+            } else {
+                mAdapterData.remove(index);
+                for (int pos = index; pos < mAdapterData.size(); pos++) {
+                    moveCache(pos + 1, pos);
+                }
+            }
+            notifyItemRemoved(index);
+            return true;
+        }
+
+        return false;
+    }
+
     public ArrayList<Uri> getAdapterData() {
         return mAdapterData;
     }
@@ -438,6 +457,24 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         String[] exifInfo = mExifInfoMap.get(from);
         mExifInfoMap.delete(from);
         mExifInfoMap.put(to, exifInfo);
+    }
+
+    private void removeCache(int index) {
+        // bitmap cache
+        Bitmap bitmap = mBitmaps.remove(index);
+        bitmap.recycle();
+
+        // bitmap orientation map
+        mBitmapOrientationMap.delete(index);
+
+        // file info map
+        mFileInfoMap.delete(index);
+
+        // image info map
+        mImageInfoMap.delete(index);
+
+        // exif info map
+        mExifInfoMap.delete(index);
     }
 
     //

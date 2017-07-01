@@ -79,6 +79,10 @@ public class GalleryDialogFragment extends DialogFragment {
         mDelegate.insertToAdapter(index, uri, scroll);
     }
 
+    public void removeFromAdapter(Uri uri) {
+        mDelegate.removeFromAdapter(uri);
+    }
+
     public ArrayList<Uri> getAdapterData() {
         return mDelegate.getAdapterData();
     }

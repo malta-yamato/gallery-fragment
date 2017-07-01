@@ -162,6 +162,15 @@ public class GalleryFragmentDelegate {
         });
     }
 
+    public void removeFromAdapter(final Uri uri) {
+        mDeferredOperations.offer(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.remove(uri);
+            }
+        });
+    }
+
     public ArrayList<Uri> getAdapterData() {
         if (!mDeferredOperations.isReleased()) {
             throw new IllegalStateException("get field is not ready");
