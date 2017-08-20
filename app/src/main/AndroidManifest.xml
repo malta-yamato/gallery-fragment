@@ -19,8 +19,8 @@
         </activity>
 
         <activity
-            android:name=".MainActivity"
-            android:label="MainActivity"/>
+            android:name=".GalleryFragmentDemo_A"
+            android:label="GalleryFragmentDemo_A"/>
 
     </application>
 
