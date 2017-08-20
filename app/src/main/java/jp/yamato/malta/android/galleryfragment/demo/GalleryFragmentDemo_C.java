@@ -68,6 +68,7 @@ public class GalleryFragmentDemo_C extends AppCompatActivity
     private BottomSheetGalleryDialogFragment createFragment() {
         BottomSheetGalleryDialogFragment fragment =
                 CustomBottomSheetFragment.newInstance(R.layout.gallery_image_container_128);
+        fragment.setStyle(0, R.style.AppThemeBottomSheetDialog); // this is quite important!
         fragment.setLayout(GalleryFragmentParams.GRID_LAYOUT, 2);
         fragment.setTopResource(R.layout.simple_top_recyclerview);
         fragment.setEmptyResource(R.mipmap.ic_launcher_round);
