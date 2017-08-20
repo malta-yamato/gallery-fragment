@@ -91,13 +91,13 @@ public class DemoUtils {
     }
 
     // Since AsyncTask used by the ImageAdapter runs in series, there is no need to synchronize.
-    public static void writeBitmapToCache(Context context, Uri uri, Bitmap bitmap) {
+    public static void writeBitmapToCache(Context context, Uri uri, Bitmap bitmap, int size) {
         if (uri == null || bitmap == null) {
             return;
         }
 
         // write cache
-        File cacheFile = getCacheFile(context, uri);
+        File cacheFile = getCacheFile(context, uri, size);
         BufferedOutputStream stream = null;
         try {
             stream = new BufferedOutputStream(new FileOutputStream(cacheFile));
@@ -116,13 +116,13 @@ public class DemoUtils {
     }
 
     // Since AsyncTask used by the ImageAdapter runs in series, there is no need to synchronize.
-    public static Bitmap readBitmapFromCache(Context context, Uri uri) {
+    public static Bitmap readBitmapFromCache(Context context, Uri uri, int size) {
         if (uri == null) {
             return null;
         }
 
         // read cache if exist
-        File cacheFile = getCacheFile(context, uri);
+        File cacheFile = getCacheFile(context, uri, size);
         if (cacheFile.exists()) {
             BufferedInputStream stream = null;
             try {
@@ -145,20 +145,35 @@ public class DemoUtils {
     }
 
     @NonNull
-    private static File getCacheFile(Context context, @NonNull Uri uri) {
+    private static File getCacheFile(Context context, @NonNull Uri uri, int size) {
         // cache name
         String path = uri.getPath();
         String cacheName =
                 path.replace('/', '_').replace('\\', '_').replace(':', '_').replace(',', '_')
-                        .replace(';', '_') + ".png";
+                        .replace(';', '_') + "_" + size + ".png";
 
         // cache dir
+        File dir = getThumbnailsDir(context);
+
+        return new File(dir, cacheName);
+    }
+
+    // if use, care synchronization.
+    public static void clearCache(Context context) {
+        File dir = getThumbnailsDir(context);
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            file.delete();
+        }
+    }
+
+    public static File getThumbnailsDir(Context context) {
         File dir = new File(context.getExternalCacheDir(), "thumbnails");
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        return new File(dir, cacheName);
+        return dir;
     }
 
     public static Bitmap createBitmapByDecodedStream(ContentResolver resolver, Uri uri,

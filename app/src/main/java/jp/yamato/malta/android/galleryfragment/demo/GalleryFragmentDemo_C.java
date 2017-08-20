@@ -32,62 +32,56 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
 
+import jp.yamato.malta.android.galleryfragment.BottomSheetGalleryDialogFragment;
 import jp.yamato.malta.android.galleryfragment.FormatterPickable;
-import jp.yamato.malta.android.galleryfragment.GalleryFragment;
+import jp.yamato.malta.android.galleryfragment.GalleryFragmentDelegate;
 import jp.yamato.malta.android.galleryfragment.GalleryFragmentParams;
 import jp.yamato.malta.android.galleryfragment.ImageAdapter;
 
-public class GalleryFragmentDemo_B extends AppCompatActivity
+public class GalleryFragmentDemo_C extends AppCompatActivity
         implements ImageAdapter.LoadTask.BitmapLoader, ImageAdapter.OnItemClickListener,
         FormatterPickable {
     @SuppressWarnings("unused")
     private static final String TAG = "GalleryFragmentDemo_A";
 
-    private static final int IMAGE_COUNT = 100;
+    private static final int IMAGE_COUNT = 1000;
 
-    private GalleryFragment mFragment;
+    private BottomSheetGalleryDialogFragment mFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_gallery_fragment_demo_with_button);
-        ((TextView) findViewById(R.id.button)).setText("Clear External Cache!");
-
-        // fragment
-        if (savedInstanceState == null) {
-            // create fragment
-            mFragment = createFragment();
-
-            // commit
-            getSupportFragmentManager().beginTransaction().replace(R.id.container, mFragment)
-                    .commit();
-
-            // set images
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkPermission()) {
-                setImages(mFragment);
-            }
-        } else {
-            mFragment =
-                    (GalleryFragment) getSupportFragmentManager().findFragmentById(R.id.container);
-        }
+        setContentView(R.layout.activity_gallery_fragment_demo_with_two_buttons);
+        ((TextView) findViewById(R.id.button1)).setText("Clear External Cache!");
+        ((TextView) findViewById(R.id.button2)).setText("Launch Bottom Sheet");
 
     }
 
-    private GalleryFragment createFragment() {
-        GalleryFragment fragment =
-                GalleryFragment.newInstance(R.layout.gallery_image_container_256);
-        fragment.setLayout(GalleryFragmentParams.LINEAR_LAYOUT_VERTICAL, 0);
+    public void onButton2Click(View view) {
+        mFragment = createFragment();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkPermission()) {
+            setImages(mFragment);
+        }
+    }
+
+    private BottomSheetGalleryDialogFragment createFragment() {
+        BottomSheetGalleryDialogFragment fragment =
+                CustomBottomSheetFragment.newInstance(R.layout.gallery_image_container_128);
+        fragment.setLayout(GalleryFragmentParams.GRID_LAYOUT, 2);
+        fragment.setTopResource(R.layout.simple_top_recyclerview);
+        fragment.setEmptyResource(R.mipmap.ic_launcher_round);
         return fragment;
     }
 
-    private void setImages(GalleryFragment fragment) {
+    private void setImages(BottomSheetGalleryDialogFragment fragment) {
         fragment.setAdapterData(DemoUtils.getSampleUriFromExternalContent(this, IMAGE_COUNT));
+        fragment.show(getSupportFragmentManager(), "dialog");
     }
 
     @Override
     public Bitmap loadBitmap(ContentResolver resolver, Uri uri) {
-        int requestSquareSize = getResources().getDimensionPixelSize(R.dimen.size_256dp);
+        int requestSquareSize = getResources().getDimensionPixelSize(R.dimen.size_128dp);
         Bitmap bitmap = DemoUtils.readBitmapFromCache(this, uri, requestSquareSize);
         if (bitmap == null) {
             bitmap = DemoUtils.createBitmapByDecodedStream(resolver, uri, requestSquareSize,
@@ -103,8 +97,29 @@ public class GalleryFragmentDemo_B extends AppCompatActivity
         DemoUtils.startActivity(this, adapter.getAdapterDataItem(position));
     }
 
-    public void onButtonClick(View view) {
+    public void onButton1Click(View view) {
         DemoUtils.clearCache(this);
+    }
+
+    //
+    // Custom Bottom Sheet Gallery Fragment
+    //
+
+    public static class CustomBottomSheetFragment extends BottomSheetGalleryDialogFragment
+            implements ImageAdapter.OnItemLongClickListener {
+
+        public static BottomSheetGalleryDialogFragment newInstance(int resource) {
+            BottomSheetGalleryDialogFragment instance = new CustomBottomSheetFragment();
+            GalleryFragmentDelegate.setArguments(instance, resource);
+            return instance;
+        }
+
+        @Override
+        public boolean onItemLongClick(View view, ImageAdapter adapter, int position) {
+            removeFromAdapter(adapter.getAdapterDataItem(position));
+            return true;
+        }
+
     }
 
     //
