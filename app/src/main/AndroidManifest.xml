@@ -22,6 +22,10 @@
             android:name=".GalleryFragmentDemo_A"
             android:label="GalleryFragmentDemo_A"/>
 
+        <activity
+            android:name=".GalleryFragmentDemo_B"
+            android:label="GalleryFragmentDemo_B"/>
+
     </application>
 
 </manifest>
