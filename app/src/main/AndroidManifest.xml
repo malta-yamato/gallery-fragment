@@ -30,6 +30,20 @@
             android:name=".GalleryFragmentDemo_C"
             android:label="GalleryFragmentDemo_C"/>
 
+        <activity
+            android:name=".GalleryFragmentDemo_D"
+            android:label="GalleryFragmentDemo_D"/>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
     </application>
 
 </manifest>
