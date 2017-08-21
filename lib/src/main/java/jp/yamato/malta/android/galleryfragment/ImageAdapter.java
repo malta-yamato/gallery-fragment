@@ -691,9 +691,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                             resolver.query(uri, new String[]{MediaStore.Images.Media.DATA}, null,
                                     null, null);
                     if (cursor != null && cursor.getCount() > 0) {
-                        cursor.moveToFirst();
-                        path = cursor.getString(
-                                cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                        int columnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+                        if (columnIndex >= 0) {
+                            cursor.moveToFirst();
+                            path = cursor.getString(columnIndex);
+                        }
                         cursor.close();
                     }
                 }
