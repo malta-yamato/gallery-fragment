@@ -261,33 +261,33 @@ public class GalleryFragmentDelegate {
         mContext = context;
 
         // bitmap loader
-        if (fragment instanceof ImageAdapter.LoadTask.BitmapLoader) {
-            mBitmapLoader = (ImageAdapter.LoadTask.BitmapLoader) fragment;
-        } else if (context instanceof ImageAdapter.LoadTask.BitmapLoader) {
+        if (context instanceof ImageAdapter.LoadTask.BitmapLoader) {
             mBitmapLoader = (ImageAdapter.LoadTask.BitmapLoader) context;
+        } else if (fragment instanceof ImageAdapter.LoadTask.BitmapLoader) {
+            mBitmapLoader = (ImageAdapter.LoadTask.BitmapLoader) fragment;
         } else {
             throw new IllegalArgumentException("couldn't resolve BitmapLoader");
         }
 
         // formatter pickable
-        if (fragment instanceof FormatterPickable) {
-            mFormatterPickable = (FormatterPickable) fragment;
-        } else if (context instanceof FormatterPickable) {
+        if (context instanceof FormatterPickable) {
             mFormatterPickable = (FormatterPickable) context;
+        } else if (fragment instanceof FormatterPickable) {
+            mFormatterPickable = (FormatterPickable) fragment;
         }
 
         // OnItemClickListener
-        if (fragment instanceof ImageAdapter.OnItemClickListener) {
-            mOnItemClickListener = (ImageAdapter.OnItemClickListener) fragment;
-        } else if (context instanceof ImageAdapter.OnItemClickListener) {
+        if (context instanceof ImageAdapter.OnItemClickListener) {
             mOnItemClickListener = (ImageAdapter.OnItemClickListener) context;
+        } else if (fragment instanceof ImageAdapter.OnItemClickListener) {
+            mOnItemClickListener = (ImageAdapter.OnItemClickListener) fragment;
         }
 
         // OnItemLongClickListener
-        if (fragment instanceof ImageAdapter.OnItemLongClickListener) {
-            mOnItemLongClickListener = (ImageAdapter.OnItemLongClickListener) fragment;
-        } else if (context instanceof ImageAdapter.OnItemLongClickListener) {
+        if (context instanceof ImageAdapter.OnItemLongClickListener) {
             mOnItemLongClickListener = (ImageAdapter.OnItemLongClickListener) context;
+        } else if (fragment instanceof ImageAdapter.OnItemLongClickListener) {
+            mOnItemLongClickListener = (ImageAdapter.OnItemLongClickListener) fragment;
         }
 
     }
