@@ -22,6 +22,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.media.ExifInterface;
 import android.support.v7.widget.RecyclerView;
@@ -90,6 +91,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         sExifRealTagsMap.put(EXIF_GPS_ALTITUDE, ExifInterface.TAG_GPS_ALTITUDE);
     }
 
+    private Handler mHandler;
+
     private Context mContext;
     private int mResource;
     private int mEmptyResource = 0;
@@ -125,6 +128,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         mAdapterData = data;
         mOnItemClickListener = onItemClickListener;
         mOnItemLongClickListener = onItemLongClickListener;
+
+        mHandler = new Handler();
     }
 
     public void setEmptyResource(int emptyResource) {
@@ -136,15 +141,20 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     }
 
     public void setAdapterData(ArrayList<Uri> data) {
-        clearCache();
-        LoadTask.cancelAll();
         mAdapterData = data;
-        notifyDataSetChanged();
+
+        clearCache();
+        cancelAllTasks();
     }
 
     public void add(Uri uri) {
         mAdapterData.add(uri);
-        notifyItemInserted(mAdapterData.size() - 1);
+
+        if (LoadTask.hasTasks()) {
+            cancelAllTasks();
+        } else {
+            notifyItemInserted(mAdapterData.size() - 1);
+        }
     }
 
     public void insert(Uri uri, int index) {
@@ -152,7 +162,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         for (int pos = mAdapterData.size() - 1; pos > index; pos--) {
             moveCache(pos - 1, pos);
         }
-        notifyItemInserted(index);
+
+        if (LoadTask.hasTasks()) {
+            cancelAllTasks();
+        } else {
+            notifyItemInserted(index);
+        }
     }
 
     public boolean remove(Uri uri) {
@@ -167,11 +182,27 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                     moveCache(pos + 1, pos);
                 }
             }
-            notifyItemRemoved(index);
+
+            if (LoadTask.hasTasks()) {
+                cancelAllTasks();
+            } else {
+                notifyItemRemoved(index);
+            }
+
             return true;
         }
 
         return false;
+    }
+
+    private void cancelAllTasks() {
+        LoadTask.cancelAll();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
     }
 
     public ArrayList<Uri> getAdapterData() {
@@ -290,13 +321,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 //            Log.d(TAG, "onBindViewHolder: taskCount = " + LoadTask.sTasks.size());
             if (LoadTask.sTasks.size() >= mMaxTaskCount ||
                     LoadTask.sTasks.size() >= LoadTask.MAX_TASK_COUNT) {
-                LoadTask.cancelAll();
-                imageView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyDataSetChanged();
-                    }
-                });
+                cancelAllTasks();
                 return;
             }
 
@@ -612,6 +637,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         public static final int MAX_TASK_COUNT = 128;
 
         private static Deque<LoadTask> sTasks = new LinkedList<>();
+
+        public static boolean hasTasks() {
+            return sTasks.size() > 0;
+        }
 
         public static void cancelAll() {
             for (LoadTask task : sTasks) {
