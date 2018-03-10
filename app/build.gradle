@@ -38,9 +38,9 @@ dependencies {
 
 //    compile 'jp.yamato.malta.android:gallery-fragment:1.0.6'
 
-    compile 'com.android.support:appcompat-v7:27.0.2'
-    compile 'com.android.support:design:27.0.2'
-    compile 'com.android.support:recyclerview-v7:27.0.2'
-    compile 'com.android.support:exifinterface:27.0.2'
+    compile 'com.android.support:appcompat-v7:27.1.0'
+    compile 'com.android.support:design:27.1.0'
+    compile 'com.android.support:recyclerview-v7:27.1.0'
+    compile 'com.android.support:exifinterface:27.1.0'
     testCompile 'junit:junit:4.12'
 }
