@@ -487,7 +487,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private void removeCache(int index) {
         // bitmap cache
         Bitmap bitmap = mBitmaps.remove(index);
-        bitmap.recycle();
+//        bitmap.recycle(); // don't need it because bitmaps are in heap.
 
         // bitmap orientation map
         mBitmapOrientationMap.delete(index);
