@@ -16,6 +16,7 @@
 
 package jp.yamato.malta.android.galleryfragment;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -24,6 +25,8 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.MediaStore;
+
+import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.SparseArray;
@@ -101,6 +104,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private OnItemLongClickListener mOnItemLongClickListener;
 
     private final BitmapCache<Integer> mBitmaps = new BitmapCache<>();
+    @SuppressLint("UseSparseArrays")
     private final SparseArray<Integer> mBitmapOrientationMap = new SparseArray<>();
 
     private boolean mIsInfoSetup;
@@ -228,8 +232,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         mFormatter = formatter;
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 //            Log.d(TAG, "onCreateViewHolder");
 
         View view = LayoutInflater.from(mContext).inflate(mResource, parent, false);
@@ -271,6 +276,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         addTagListWithViewTag(fileTagList, view, FILE_NAME);
         addTagListWithViewTag(fileTagList, view, FILE_PATH);
         addTagListWithViewTag(fileTagList, view, FILE_SIZE);
+        //noinspection ToArrayCallWithZeroLengthArrayArgument
         mFileTags = fileTagList.toArray(new String[fileTagList.size()]);
 
         //
@@ -281,6 +287,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         addTagListWithViewTag(imageTagList, view, IMAGE_DISPLAY_NAME);
         addTagListWithViewTag(imageTagList, view, IMAGE_DATE_TAKEN);
         addTagListWithViewTag(imageTagList, view, IMAGE_SIZE);
+        //noinspection ToArrayCallWithZeroLengthArrayArgument
         mImageTags = imageTagList.toArray(new String[imageTagList.size()]);
 
         //
@@ -294,6 +301,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         addTagListWithViewTag(exifTagList, view, EXIF_GPS_LATITUDE);
         addTagListWithViewTag(exifTagList, view, EXIF_GPS_LONGITUDE);
         addTagListWithViewTag(exifTagList, view, EXIF_GPS_ALTITUDE);
+        //noinspection ToArrayCallWithZeroLengthArrayArgument
         mExifTags = exifTagList.toArray(new String[exifTagList.size()]);
     }
 
@@ -305,7 +313,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 //            Log.d(TAG, "onBindViewHolder");
 
         // get uri
@@ -543,7 +551,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 return;
             }
 
-            imageView = (ImageView) itemView.findViewById(R.id.image);
+            imageView = itemView.findViewById(R.id.image);
             if (imageView == null) {
                 throw new IllegalArgumentException("cannot find image view");
             }
@@ -559,13 +567,13 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
             textViews = new TextView[length];
             for (int i = fileFromIndex; i < fileToIndex; i++) {
-                textViews[i] = (TextView) itemView.findViewWithTag(fileTags[i - fileFromIndex]);
+                textViews[i] = itemView.findViewWithTag(fileTags[i - fileFromIndex]);
             }
             for (int i = imageFromIndex; i < imageToIndex; i++) {
-                textViews[i] = (TextView) itemView.findViewWithTag(imageTags[i - imageFromIndex]);
+                textViews[i] = itemView.findViewWithTag(imageTags[i - imageFromIndex]);
             }
             for (int i = exifFromIndex; i < exifToIndex; i++) {
-                textViews[i] = (TextView) itemView.findViewWithTag(exifTags[i - exifFromIndex]);
+                textViews[i] = itemView.findViewWithTag(exifTags[i - exifFromIndex]);
             }
         }
 
@@ -918,7 +926,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         return Bitmap.createBitmap(src, 0, 0, width, height, m, filter);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "SameParameterValue"})
     private static Bitmap createRotatedBitmap(Bitmap src, float rotation, boolean filter) {
         Matrix m = new Matrix();
         int width = src.getWidth();
@@ -929,7 +937,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         return Bitmap.createBitmap(src, 0, 0, width, height, m, filter);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "SameParameterValue"})
     private static Bitmap createPreScaledBitmap(Bitmap src, float sx, float sy, boolean filter) {
         Matrix m = new Matrix();
         int width = src.getWidth();
@@ -938,7 +946,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         return Bitmap.createBitmap(src, 0, 0, width, height, m, filter);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "SameParameterValue"})
     private static Bitmap createRotatedAndPreScaledBitmap(Bitmap src, float rotation, float sx,
             float sy, boolean filter) {
         Matrix m = new Matrix();
