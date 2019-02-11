@@ -17,6 +17,7 @@
 package jp.yamato.malta.android.galleryfragment;
 
 import android.content.Context;
+
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,9 +34,9 @@ public class GalleryFragmentParams {
             case GRID_LAYOUT:
                 return new GridLayoutManager(context, spanCount);
             case LINEAR_LAYOUT_HORIZONTAL:
-                return new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
+                return new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false);
             case LINEAR_LAYOUT_VERTICAL:
-                return new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+                return new LinearLayoutManager(context, RecyclerView.VERTICAL, false);
             default:
                 throw new IllegalArgumentException("layout not match");
         }
