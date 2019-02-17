@@ -29,6 +29,7 @@ public class DeferredOperations {
         mIsReleased = false;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isReleased() {
         return mIsReleased;
     }
