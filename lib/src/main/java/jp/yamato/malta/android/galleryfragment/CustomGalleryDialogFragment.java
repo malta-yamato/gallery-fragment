@@ -50,7 +50,9 @@ public class CustomGalleryDialogFragment extends GalleryDialogFragment
 
     @Override
     public Bitmap loadBitmap(ContentResolver resolver, Uri uri) {
+        //noinspection ConstantConditions
         long id = Long.valueOf(uri.getLastPathSegment());
+        //noinspection ConstantConditions
         return MediaStore.Images.Thumbnails.getThumbnail(getContext().getContentResolver(), id,
                 MediaStore.Images.Thumbnails.MICRO_KIND, null);
     }
