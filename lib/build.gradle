@@ -6,8 +6,6 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
     }
     buildTypes {
         release {
@@ -26,16 +24,16 @@ dependencies {
 }
 
 // maven
-apply plugin: 'maven'
-def repo = new File(rootDir, "../AndroidRepos")
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository url: "file://${repo.absolutePath}"
-            pom.version = '1.0.10'
-            pom.groupId = 'jp.yamato.malta.android'
-            pom.artifactId = 'gallery-fragment'
-        }
-    }
-}
+//apply plugin: 'maven'
+//def repo = new File(rootDir, "../AndroidRepos")
+//
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository url: "file://${repo.absolutePath}"
+//            pom.version = '1.0.10'
+//            pom.groupId = 'jp.yamato.malta.android'
+//            pom.artifactId = 'gallery-fragment'
+//        }
+//    }
+//}
